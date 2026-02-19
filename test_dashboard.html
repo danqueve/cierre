@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Design Test</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            padding-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Dashboard Verification</h1>
+
+        <!-- Filter Bar -->
+        <div class="card"
+            style="padding: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; background: rgba(30, 30, 30, 0.6); backdrop-filter: blur(10px);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="calendar-days" style="color: var(--accent-blue);"></i>
+                <div style="color: var(--text-main); font-size: 0.95rem;">
+                    Semana del: <strong style="color: var(--accent-blue);">12/02/2024</strong>
+                    al <strong style="color: var(--accent-blue);">17/02/2024</strong>
+                </div>
+            </div>
+
+            <form
+                style="display: flex; gap: 10px; align-items: center; background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.05);">
+                <label style="color: var(--text-muted); margin:0; font-size: 0.85rem;">Ir a:</label>
+                <input type="date" value="2024-02-14"
+                    style="width: auto; background: transparent; border: none; color: white; padding: 5px;">
+                <button type="button" class="btn"
+                    style="padding: 6px 15px; font-size: 0.85rem; background: var(--accent-purple); color: white; border-radius: 20px; border: none;"><i
+                        data-lucide="search" style="width: 14px; height: 14px;"></i></button>
+            </form>
+        </div>
+
+        <div class="stats-grid">
+
+            <!-- 1. Total Recaudado (Verified with Sparkline) -->
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Total Recaudado</span>
+                    <i data-lucide="dollar-sign" class="stat-icon"></i>
+                </div>
+                <div class="stat-number text-green">$ 15,430.00</div>
+                <div style="display: flex; align-items: center; margin-top: 5px;">
+                    <span class="trend-indicator trend-up">+5.2%</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 5px;">vs semana
+                        anterior</span>
+                </div>
+
+                <!-- Hardcoded Sparkline SVG representing upward trend -->
+                <div style="margin-top: 10px;">
+                    <svg viewBox="0 0 100 30" class="sparkline-container">
+                        <polyline points="0,25 20,20 40,22 60,10 80,15 100,2" class="sparkline-path" fill="none" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- 2. Efectivo -->
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Efectivo</span>
+                    <i data-lucide="banknote" class="stat-icon"></i>
+                </div>
+                <div class="stat-number text-blue">$ 8,200.00</div>
+                <div style="height: 5px;"></div>
+            </div>
+
+            <!-- 4. Gastos (Negative Trend) -->
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Gastos Reportados</span>
+                    <i data-lucide="trending-down" class="stat-icon"></i>
+                </div>
+                <div class="stat-number text-red">- $ 1,500.00</div>
+            </div>
+
+        </div>
+
+        <!-- GRÁFICOS -->
+        <div
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+
+            <!-- Gráfico 1: Barras -->
+            <div class="card">
+                <div class="card-header">Evolución de Cargas Diaria</div>
+                <div id="daily_chart" style="width: 100%; height: 350px;"></div>
+            </div>
+
+            <!-- Gráfico 2: Circular (Empty State Test) -->
+            <div class="card">
+                <div class="card-header">Distribución por Zona (Empty State)</div>
+                <div class="empty-state">
+                    <i data-lucide="pie-chart" class="empty-icon"></i>
+                    <div>No hay datos de zonas disponibles.</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="text/javascript">
+        google.charts.load('current', { 'packages': ['corechart'] });
+        google.charts.setOnLoadCallback(drawCharts);
+
+        function drawCharts() {
+            var data = new google.visualization.DataTable();
+            data.addColumn('string', 'Día');
+            data.addColumn('number', 'Recaudado');
+            data.addColumn({ role: 'style' });
+
+            data.addRows([
+                ['Lunes', 1000, 'color: #ff79c6'],
+                ['Martes', 1170, 'color: #bd93f9'],
+                ['Miércoles', 660, 'color: #8be9fd'],
+                ['Jueves', 1030, 'color: #50fa7b']
+            ]);
+
+            var options = {
+                backgroundColor: 'transparent',
+                legend: { position: 'none' },
+                hAxis: { textStyle: { color: '#e0e0e0' } },
+                vAxis: {
+                    textStyle: { color: '#e0e0e0' },
+                    format: 'currency',
+                    gridlines: { color: '#333' }
+                },
+                animation: { startup: true, duration: 800, easing: 'out' },
+                bar: { groupWidth: "60%" }
+            };
+
+            var chart = new google.visualization.ColumnChart(document.getElementById('daily_chart'));
+            chart.draw(data, options);
+
+            lucide.createIcons();
+        }
+    </script>
+</body>
+
+</html>

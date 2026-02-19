@@ -78,6 +78,52 @@ $barColors = [
     '#ff5555'  // Sábado (Rojo)
 ];
 
+// --- 5. Lógica de Tendencias y Sparklines (NUEVO) ---
+$fecha_inicio_semana_prev = date('Y-m-d', strtotime('-1 week', strtotime($fecha_inicio_semana)));
+
+// Totales Semana Anterior
+$stmtPrev = $pdo->prepare("
+    SELECT SUM(d.efectivo + d.transferencia) as total_prev
+    FROM detalles_diarios d
+    JOIN cierres_semanales c ON d.cierre_id = c.id
+    WHERE c.fecha_inicio = ?
+");
+$stmtPrev->execute([$fecha_inicio_semana_prev]);
+$total_prev = $stmtPrev->fetchColumn() ?: 0;
+
+// Cálculo de Tendencia Global
+$trend_percent = 0;
+if($total_prev > 0) {
+    $trend_percent = (($total_cobrado - $total_prev) / $total_prev) * 100;
+} elseif($total_cobrado > 0) {
+    $trend_percent = 100; // Si antes era 0 y ahora hay, es 100% crecimiento
+}
+
+// Generador de Sparkline SVG
+function generateSparkline($data) {
+    if(empty($data)) return '';
+    $width = 100; $height = 30;
+    $max = max($data) ?: 1;
+    $min = min($data);
+    $range = $max - $min ?: 1;
+    
+    $points = [];
+    $step = $width / (count($data) - 1 ?: 1);
+    
+    foreach($data as $i => $val) {
+        $x = $i * $step;
+        $y = $height - (($val - $min) / $range * $height);
+        $points[] = "$x,$y";
+    }
+    
+    $polyline = implode(' ', $points);
+    return "<svg viewBox='0 0 $width $height' class='sparkline-container'><polyline points='$polyline' class='sparkline-path' fill='none' /></svg>";
+}
+
+// Datos simulados para Sparklines (En producción idealmente serían datos reales de los últimos 7 días)
+$sparklineDataGlobal = [];
+foreach($dataDiaria as $d) $sparklineDataGlobal[] = $d['total_dia'];
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -86,10 +132,11 @@ $barColors = [
     <title>Dashboard - Cobranzas</title>
     <link rel="stylesheet" href="style.css">
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* Estilos específicos para las tarjetas */
+        /* Estilos específicos para las tarjetas - Actualizado */
         .stat-card {
-            background-color: var(--card-bg);
+            background: linear-gradient(145deg, var(--card-bg), #222); /* Sutil gradiente */
             border: 1px solid var(--border-color);
             border-radius: 16px;
             padding: 1.5rem;
@@ -97,28 +144,48 @@ $barColors = [
             flex-direction: column;
             justify-content: space-between;
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+             content: '';
+             position: absolute;
+             top: 0; left: 0; width: 100%; height: 4px;
+             background: linear-gradient(to right, var(--accent-purple), var(--accent-blue));
+             opacity: 0;
+             transition: opacity 0.3s;
         }
         .stat-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 12px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            border-color: rgba(255,255,255,0.1);
+        }
+        .stat-card:hover::before { opacity: 1; }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 5px;
         }
         .stat-title {
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             text-transform: uppercase;
             font-weight: 600;
             letter-spacing: 0.5px;
-            margin-bottom: 10px;
-        }
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 800;
         }
         .stat-icon {
-            align-self: flex-end;
-            margin-bottom: -10px;
-            opacity: 0.8;
+            color: var(--text-muted);
+            opacity: 0.5;
+            width: 20px; height: 20px;
+        }
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: white;
+            margin: 5px 0;
         }
     </style>
 </head>
@@ -128,20 +195,20 @@ $barColors = [
 
     <div class="container">
         
-        <!-- Barra de Filtro de Fechas -->
-        <div class="card" style="padding: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-            <div style="color: var(--text-muted);">
-                Semana del: <strong style="color: var(--accent-blue);"><?= date('d/m/Y', strtotime($fecha_inicio_semana)) ?></strong> 
-                al <strong style="color: var(--accent-blue);"><?= date('d/m/Y', strtotime($fecha_fin_semana)) ?></strong>
+        <!-- Barra de Filtro de Fechas (Glassmorphism) -->
+        <div class="card" style="padding: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; background: rgba(30, 30, 30, 0.6); backdrop-filter: blur(10px);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="calendar-days" style="color: var(--accent-blue);"></i>
+                <div style="color: var(--text-main); font-size: 0.95rem;">
+                    Semana del: <strong style="color: var(--accent-blue);"><?= date('d/m/Y', strtotime($fecha_inicio_semana)) ?></strong> 
+                    al <strong style="color: var(--accent-blue);"><?= date('d/m/Y', strtotime($fecha_fin_semana)) ?></strong>
+                </div>
             </div>
             
-            <form method="GET" style="display: flex; gap: 10px; align-items: center;">
-                <label style="color: var(--text-main); margin:0;">Ir a:</label>
-                <input type="date" name="fecha_filtro" value="<?= $fecha_input ?>" style="width: auto;" required>
-                <button type="submit" class="btn btn-primary" style="padding: 8px 15px; font-size: 0.9rem;">Filtrar</button>
-                <?php if(isset($_GET['fecha_filtro'])): ?>
-                    <a href="dashboard.php" class="btn" style="background: #333; color: white; padding: 8px 15px; text-decoration: none; font-size: 0.9rem;">Hoy</a>
-                <?php endif; ?>
+            <form method="GET" style="display: flex; gap: 10px; align-items: center; background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.05);">
+                <label style="color: var(--text-muted); margin:0; font-size: 0.85rem;">Ir a:</label>
+                <input type="date" name="fecha_filtro" value="<?= $fecha_input ?>" style="width: auto; background: transparent; border: none; color: white; padding: 5px;" required>
+                <button type="submit" class="btn" style="padding: 6px 15px; font-size: 0.85rem; background: var(--accent-purple); color: white; border-radius: 20px; border: none;"><i data-lucide="search" style="width: 14px; height: 14px;"></i></button>
             </form>
         </div>
 
@@ -150,25 +217,53 @@ $barColors = [
             
             <!-- 1. Total Recaudado -->
             <div class="stat-card">
-                <div class="stat-title">Total Recaudado</div>
+                <div class="stat-header">
+                    <span class="stat-title">Total Recaudado</span>
+                    <i data-lucide="dollar-sign" class="stat-icon"></i>
+                </div>
                 <div class="stat-number text-green"><?= formatCurrency($total_cobrado) ?></div>
+                <div style="display: flex; align-items: center; margin-top: 5px;">
+                    <?php if($trend_percent != 0): ?>
+                        <span class="trend-indicator <?= $trend_percent > 0 ? 'trend-up' : 'trend-down' ?>">
+                            <?= $trend_percent > 0 ? '+' : '' ?><?= round($trend_percent, 1) ?>%
+                        </span>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 5px;">vs semana anterior</span>
+                    <?php else: ?>
+                        <span class="trend-indicator trend-neutral">0%</span>
+                    <?php endif; ?>
+                </div>
+                
+                <!-- Sparkline SVG -->
+                <div style="margin-top: 10px;">
+                    <?= generateSparkline($sparklineDataGlobal) ?>
+                </div>
             </div>
-
+ 
             <!-- 2. Efectivo -->
             <div class="stat-card">
-                <div class="stat-title">Efectivo</div>
+                <div class="stat-header">
+                    <span class="stat-title">Efectivo</span>
+                    <i data-lucide="banknote" class="stat-icon"></i>
+                </div>
                 <div class="stat-number text-blue"><?= formatCurrency($total_efectivo) ?></div>
+                 <div style="height: 5px;"></div>
             </div>
-
+ 
             <!-- 3. Transferencias -->
             <div class="stat-card">
-                <div class="stat-title">Transferencias</div>
+                 <div class="stat-header">
+                    <span class="stat-title">Transferencias</span>
+                    <i data-lucide="credit-card" class="stat-icon"></i>
+                </div>
                 <div class="stat-number text-yellow"><?= formatCurrency($total_transferencia) ?></div>
             </div>
-
-            <!-- 4. Gastos Reportados (NUEVA TARJETA) -->
+ 
+            <!-- 4. Gastos Reportados -->
             <div class="stat-card">
-                <div class="stat-title">Gastos Reportados</div>
+                 <div class="stat-header">
+                    <span class="stat-title">Gastos Reportados</span>
+                    <i data-lucide="trending-down" class="stat-icon"></i>
+                </div>
                 <div class="stat-number text-red">- <?= formatCurrency($total_gastos) ?></div>
             </div>
 
@@ -181,7 +276,10 @@ $barColors = [
             <div class="card">
                 <div class="card-header">Evolución de Cargas Diaria</div>
                 <?php if(empty($dataDiaria)): ?>
-                    <div style="text-align: center; padding: 3rem; color: var(--text-muted);">Sin datos.</div>
+                    <div class="empty-state">
+                        <i data-lucide="bar-chart-2" class="empty-icon"></i>
+                        <div>No hay movimientos registrados esta semana.</div>
+                    </div>
                 <?php else: ?>
                     <div id="daily_chart" style="width: 100%; height: 350px;"></div>
                 <?php endif; ?>
@@ -191,7 +289,10 @@ $barColors = [
             <div class="card">
                 <div class="card-header">Distribución por Zona</div>
                 <?php if(empty($dataZonas)): ?>
-                    <div style="text-align: center; padding: 3rem; color: var(--text-muted);">Sin datos.</div>
+                     <div class="empty-state">
+                        <i data-lucide="pie-chart" class="empty-icon"></i>
+                        <div>No hay datos de zonas disponibles.</div>
+                    </div>
                 <?php else: ?>
                     <div id="piechart_3d" style="width: 100%; height: 350px;"></div>
                 <?php endif; ?>
@@ -278,7 +379,10 @@ $barColors = [
         }
       }
       
-      window.onresize = drawCharts;
+       window.onresize = drawCharts;
+       window.onload = function() {
+           lucide.createIcons();
+       }
     </script>
 </body>
 </html>

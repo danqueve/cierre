@@ -77,6 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <title>Cargar Horarios</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="main.js" defer></script>
     <style>
         /* Nuevos estilos para la grilla de horarios */
         .grid-dias {
@@ -275,19 +277,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Ejecutar al cargar para configurar la vista inicial
         window.addEventListener('load', function() {
             checkTurnos();
+            lucide.createIcons();
         });
     </script>
 </head>
-<body>
+</head>
+<body class="fade-in">
     
     <?php include 'header.php'; ?>
 
     <div class="container">
         
+        <div id="toast-container" class="toast-container"></div>
+
         <?php if($mensaje): ?>
-            <div class="card" style="border-color: var(--accent-green); color: var(--accent-green); text-align: center;">
-                <?= $mensaje ?>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const msg = "<?= addslashes($mensaje) ?>";
+                    const isError = "<?= strpos($mensaje, 'Error') !== false ? 'true' : 'false' ?>";
+                    showToast(msg, isError === 'true' ? 'error' : 'success');
+                });
+            </script>
         <?php endif; ?>
 
         <form method="POST">
@@ -297,21 +307,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="card-header">Nueva Liquidación de Jornales</div>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; align-items: end;">
-                    <div>
+                    <div class="input-group">
                         <label>Empleado</label>
-                        <select name="zona" onchange="checkTurnos()" required style="font-size: 1.1em; padding: 12px; background-color: #2b2b2b;">
+                        <i data-lucide="user" class="input-icon"></i>
+                        <select name="zona" onchange="checkTurnos()" required class="input-with-icon" style="background-color: #2b2b2b;">
                             <?php foreach($empleados as $emp): ?>
                                 <option value="<?= $emp ?>"><?= $emp ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div>
+                    <div class="input-group">
                         <label>Inicio Semana (Lunes)</label>
-                        <input type="date" name="fecha_inicio" required value="<?= date('Y-m-d', strtotime('monday this week')) ?>" style="font-size: 1.1em; padding: 12px;">
+                        <i data-lucide="calendar" class="input-icon"></i>
+                        <input type="date" name="fecha_inicio" required value="<?= date('Y-m-d', strtotime('monday this week')) ?>" class="input-with-icon">
                     </div>
-                    <div>
+                    <div class="input-group">
                         <label style="color: var(--accent-green); font-weight: bold;">Valor Hora ($)</label>
-                        <input type="number" id="valor_hora" name="valor_hora" step="0.01" class="calculable" oninput="calcularHoras()" placeholder="0.00" style="font-size: 1.2em; padding: 10px; font-weight: bold; color: var(--accent-green); border-color: var(--accent-green);">
+                        <i data-lucide="dollar-sign" class="input-icon" style="color: var(--accent-green);"></i>
+                        <input type="number" id="valor_hora" name="valor_hora" step="0.01" class="calculable input-with-icon" oninput="calcularHoras()" placeholder="0.00" style="font-size: 1.2em; font-weight: bold; color: var(--accent-green); border-bottom-color: var(--accent-green);">
                     </div>
                 </div>
             </div>
@@ -328,19 +341,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <!-- Turno Mañana (O Único) -->
                         <div class="turno-row">
                             <div class="turno-label label-manana">HORARIO</div>
-                            <div class="time-input-group">
-                                <input type="time" name="horas[<?= $dia ?>][entrada]" oninput="calcularHoras()" title="Entrada">
+                            <div class="time-input-group input-group" style="margin-bottom: 0;">
+                                <i data-lucide="clock" class="input-icon" style="width:14px;"></i>
+                                <input type="time" name="horas[<?= $dia ?>][entrada]" oninput="calcularHoras()" title="Entrada" class="input-with-icon">
                                 <span style="color:#555">-</span>
-                                <input type="time" name="horas[<?= $dia ?>][salida]" oninput="calcularHoras()" title="Salida">
+                                <input type="time" name="horas[<?= $dia ?>][salida]" oninput="calcularHoras()" title="Salida" class="input-with-icon">
                             </div>
                         </div>
                         <!-- Turno Tarde (Solo para Luz - controlado por JS) -->
                         <div class="turno-row row-tarde">
                             <div class="turno-label">TARDE</div>
-                            <div class="time-input-group">
-                                <input type="time" name="horas[<?= $dia ?>][entrada_tarde]" oninput="calcularHoras()" title="Entrada Tarde">
+                            <div class="time-input-group input-group" style="margin-bottom: 0;">
+                                <i data-lucide="clock" class="input-icon" style="width:14px;"></i>
+                                <input type="time" name="horas[<?= $dia ?>][entrada_tarde]" oninput="calcularHoras()" title="Entrada Tarde" class="input-with-icon">
                                 <span style="color:#555">-</span>
-                                <input type="time" name="horas[<?= $dia ?>][salida_tarde]" oninput="calcularHoras()" title="Salida Tarde">
+                                <input type="time" name="horas[<?= $dia ?>][salida_tarde]" oninput="calcularHoras()" title="Salida Tarde" class="input-with-icon">
                             </div>
                         </div>
                     </div>
@@ -356,20 +371,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
                         
                         <!-- Columna: Sumas (Saldo a Favor) -->
-                        <div>
+                        <div class="input-group">
                             <h4 style="margin-top: 0; color: var(--accent-green);">Ingresos Extra / Saldo a Favor (+)</h4>
                             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                                <input type="number" id="saldo_favor" name="saldo_favor" step="0.01" oninput="calcularHoras()" placeholder="$ 0.00" style="width: 120px; font-weight: bold; color: var(--accent-green);">
-                                <input type="text" name="saldo_concepto" placeholder="Concepto (Ej. Premio, Viáticos)" style="flex: 1;">
+                                <div class="input-group" style="width: 140px; margin-bottom: 0;">
+                                    <i data-lucide="plus" class="input-icon" style="color: var(--accent-green);"></i>
+                                    <input type="number" id="saldo_favor" name="saldo_favor" step="0.01" oninput="calcularHoras()" placeholder="0.00" class="input-with-icon" style="font-weight: bold; color: var(--accent-green); border-bottom-color: var(--accent-green);">
+                                </div>
+                                <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                                    <i data-lucide="tag" class="input-icon"></i>
+                                    <input type="text" name="saldo_concepto" placeholder="Concepto" class="input-with-icon">
+                                </div>
                             </div>
                         </div>
 
                         <!-- Columna: Restas (Descuentos) -->
-                        <div>
+                        <div class="input-group">
                             <h4 style="margin-top: 0; color: var(--accent-red);">Descuentos / Adelantos (-)</h4>
                             <div style="display: flex; gap: 10px;">
-                                <input type="number" id="descuento" name="descuento" step="0.01" oninput="calcularHoras()" placeholder="$ 0.00" style="width: 120px; font-weight: bold; color: var(--accent-red); border-color: var(--accent-red);">
-                                <input type="text" name="descuento_concepto" placeholder="Concepto (Ej. Adelanto, Préstamo)" style="flex: 1;">
+                                <div class="input-group" style="width: 140px; margin-bottom: 0;">
+                                    <i data-lucide="minus" class="input-icon" style="color: var(--accent-red);"></i>
+                                    <input type="number" id="descuento" name="descuento" step="0.01" oninput="calcularHoras()" placeholder="0.00" class="input-with-icon" style="font-weight: bold; color: var(--accent-red); border-bottom-color: var(--accent-red);">
+                                </div>
+                                <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                                    <i data-lucide="tag" class="input-icon"></i>
+                                    <input type="text" name="descuento_concepto" placeholder="Concepto" class="input-with-icon">
+                                </div>
                             </div>
                         </div>
                     </div>

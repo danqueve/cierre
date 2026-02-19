@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print & Feedback Test</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        // Init Icons
+        window.onload = function () { lucide.createIcons(); };
+
+        // Toast Function (Copied from cargar.php for testing)
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+
+            let icon = '';
+            if (type === 'success') icon = '<i data-lucide="check-circle" style="color: var(--accent-green);"></i>';
+            else if (type === 'error') icon = '<i data-lucide="alert-circle" style="color: var(--accent-red);"></i>';
+            else icon = '<i data-lucide="info" style="color: var(--accent-blue);"></i>';
+
+            toast.innerHTML = `
+                ${icon}
+                <div class="toast-content">
+                    <div class="toast-title">${type === 'success' ? '¡Éxito!' : 'Atención'}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+            `;
+            container.appendChild(toast);
+            lucide.createIcons();
+            requestAnimationFrame(() => { toast.classList.add('show'); });
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => { toast.remove(); }, 400);
+            }, 5000);
+        }
+
+        // Loading State Test
+        function testLoading(btn) {
+            btn.classList.add('btn-loading');
+            btn.innerHTML = '<span>Cargando...</span>';
+            setTimeout(() => {
+                btn.classList.remove('btn-loading');
+                btn.innerHTML = 'Guardar Datos';
+                showToast('Proceso completado', 'success');
+            }, 2000);
+        }
+    </script>
+</head>
+
+<body style="background: #333; color: white;">
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <div style="padding: 20px; text-align: center;" class="no-print">
+        <h1>Print & Feedback Verification</h1>
+        <p>Use the buttons below to test notifications. Use CTRL+P to test Print Layout.</p>
+
+        <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
+            <button class="btn" style="background: var(--accent-green); color: white;"
+                onclick="showToast('Datos guardados correctamente', 'success')">Test Success Toast</button>
+            <button class="btn" style="background: var(--accent-red); color: white;"
+                onclick="showToast('Error al conectar con la base de datos', 'error')">Test Error Toast</button>
+            <button class="btn" style="background: var(--accent-blue); color: white;"
+                onclick="showToast('Información importante aquí', 'info')">Test Info Toast</button>
+        </div>
+
+        <div style="margin-bottom: 40px;">
+            <button class="btn-primary" style="padding: 10px 30px;" onclick="testLoading(this)">Test Loading
+                State</button>
+        </div>
+
+        <hr style="border-color: #555;">
+        <h2>Vista Previa de Impresión (Mockup A4)</h2>
+    </div>
+
+    <!-- MOCKUP A4 PAGE -->
+    <div class="preview-container">
+        <div class="a4-page">
+            <div class="watermark"><img src="img/logo.png" alt="Logo"></div>
+
+            <div class="doc-header">
+                <h2>Liquidación Semanal</h2>
+                <h4>Documento de Prueba</h4>
+            </div>
+
+            <div class="doc-info"
+                style="display: flex; justify-content: space-between; background: #f8f9fa; padding: 10px; border: 1px solid #ddd; color: #333;">
+                <div>Fecha: <strong>12/03/2024</strong></div>
+                <div>Zona: <strong>Test Zone</strong></div>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px; color: #000;">
+                <thead>
+                    <tr style="background: #eee;">
+                        <th style="border: 1px solid #000; padding: 8px;">Concepto</th>
+                        <th style="border: 1px solid #000; padding: 8px;">Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 8px;">Ingreso Efectivo</td>
+                        <td style="border: 1px solid #000; padding: 8px;">$ 1,500.00</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 8px;">Gasto Operativo</td>
+                        <td style="border: 1px solid #000; padding: 8px;">$ 200.00</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div
+                style="margin-top: 50px; border-top: 1px solid #000; width: 200px; text-align: center; padding-top: 5px; color: #000;">
+                Firma Responsable
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

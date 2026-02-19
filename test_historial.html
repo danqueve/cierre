@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>History Table Design Test</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            padding: 40px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container" style="max-width: 1000px; margin: 0 auto;">
+        <h1>History Table Verification</h1>
+
+        <!-- TEST 1: Modern Table with Records -->
+        <div class="card">
+            <div class="card-header" style="text-align: center;">Historial de Liquidaciones (Test)</div>
+
+            <div style="overflow-x: auto;">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha Semana</th>
+                            <th>Zona</th>
+                            <th>Total Recaudado</th>
+                            <th>Fecha Carga</th>
+                            <th style="text-align: center;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Row 1: Recent (New Badge) -->
+                        <tr>
+                            <td style="font-weight: 600;">
+                                12/02/2024
+                                <span
+                                    style="color: var(--text-muted); font-size: 0.85em; font-weight: normal; margin-left: 5px;">(Lunes)</span>
+                                <span class="badge-new">Nuevo</span>
+                            </td>
+                            <td>
+                                <span class="badge-zona">Zona 1</span>
+                            </td>
+                            <td class="text-green" style="font-weight: 700; font-size: 1.05rem;">
+                                $ 15,430.00
+                            </td>
+                            <td style="color: var(--text-muted); font-size: 0.9em;">
+                                <i data-lucide="clock"
+                                    style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></i>
+                                18/02/2024 10:30
+                            </td>
+                            <td style="text-align: center;">
+                                <a href="#" class="btn-action">
+                                    Ver Detalle <i data-lucide="external-link"
+                                        style="width: 14px; height: 14px; vertical-align: middle; margin-left: 4px;"></i>
+                                </a>
+                            </td>
+                        </tr>
+
+                        <!-- Row 2: Standard -->
+                        <tr>
+                            <td style="font-weight: 600;">
+                                05/02/2024
+                                <span
+                                    style="color: var(--text-muted); font-size: 0.85em; font-weight: normal; margin-left: 5px;">(Lunes)</span>
+                            </td>
+                            <td>
+                                <span class="badge-zona">Zona 2</span>
+                            </td>
+                            <td class="text-green" style="font-weight: 700; font-size: 1.05rem;">
+                                $ 12,100.00
+                            </td>
+                            <td style="color: var(--text-muted); font-size: 0.9em;">
+                                <i data-lucide="clock"
+                                    style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></i>
+                                11/02/2024 09:15
+                            </td>
+                            <td style="text-align: center;">
+                                <a href="#" class="btn-action">
+                                    Ver Detalle <i data-lucide="external-link"
+                                        style="width: 14px; height: 14px; vertical-align: middle; margin-left: 4px;"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <br><br>
+
+        <!-- TEST 2: Empty State -->
+        <div class="card">
+            <div class="card-header" style="text-align: center;">Historial Vacío (Empty State Test)</div>
+
+            <div class="empty-state">
+                <i data-lucide="folder-open" class="empty-state-icon"></i>
+                <div class="empty-state-title">No hay liquidaciones registradas</div>
+                <div class="empty-state-description">
+                    Aún no se han cargado cierres de cobranza en el sistema.<br>
+                    Comienza cargando una nueva liquidación semanal.
+                </div>
+                <a href="#" class="empty-state-button">
+                    <i data-lucide="plus-circle"
+                        style="width: 18px; height: 18px; vertical-align: text-bottom; margin-right: 5px;"></i>
+                    Nueva Carga
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>

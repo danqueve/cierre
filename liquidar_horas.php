@@ -65,80 +65,46 @@ $totalPagar = $subtotalHoras + $saldoFavor - $descuento;
     <title>Liquidación Horas - <?= $cierre['zona'] ?></title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Estilos A4 Exclusivos - Minimalista B&N */
-        html, body { background-color: #525659; min-height: 100%; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
-        .preview-container { display: flex; justify-content: center; padding: 40px 0; }
+        /* Estilos específicos de la página (Mínimos, delegando a style.css) */
+        body { background-color: #525659; }
+        .preview-container { display: flex; justify-content: center; padding: 40px 0; min-height: 100vh; }
         
-        /* Hoja A4 */
         .a4-page {
-            width: 210mm; min-height: 297mm; padding: 20mm; background: white; 
-            color: black; position: relative; box-shadow: 0 0 15px rgba(0,0,0,0.3);
-            box-sizing: border-box;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 15px rgba(0,0,0,0.3);
+            color: #333;
+            position: relative;
         }
 
-        /* Encabezado */
         .doc-header { text-align: center; border-bottom: 2px solid black; padding-bottom: 15px; margin-bottom: 25px; }
         .doc-header h2 { margin: 0; text-transform: uppercase; font-size: 18pt; font-weight: bold; }
         .doc-header h4 { margin: 5px 0; color: black; font-weight: normal; font-size: 12pt; }
 
-        /* Información Principal */
-        .info-box { 
-            display: flex; justify-content: space-between; 
-            margin-bottom: 30px; font-size: 11pt; border-bottom: 1px solid #ccc; padding-bottom: 15px;
-        }
-        .info-item strong { font-weight: bold; }
-
-        /* Tabla de Horarios */
-        .hours-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 10pt; }
-        
-        .hours-table th { 
-            background-color: #f8f5f5; /* Gris Claro */
-            color: black; 
-            padding: 8px; 
-            text-transform: uppercase; 
-            border: 1px solid black; 
-            vertical-align: middle;
-            font-weight: bold;
-        }
-        
-        .hours-table td { 
-            border: 1px solid black; 
-            padding: 8px; 
-            text-align: center; 
-            color: black;
-        }
-        
-        .hours-table tr:nth-child(even) { background-color: #f9f9f9; }
-        .th-group { background-color: #d0d0d0 !important; font-size: 9pt; }
-
-        /* Caja de Totales - Estilo Recibo Detallado */
-        .total-box { 
-            float: right; width: 45%; border: 2px solid black; padding: 15px; margin-top: 10px;
-        }
-        .total-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 11pt; }
-        .sub-detail { font-size: 9pt; color: #444; font-style: italic; margin-top: -5px; margin-bottom: 8px; text-align: right; }
-        
-        .grand-total { border-top: 2px solid black; padding-top: 10px; font-weight: bold; font-size: 14pt; margin-top: 10px; background-color: #f0f0f0; padding: 10px; }
-
-        /* Firmas */
-        .firma-box { margin-top: 80px; display: flex; justify-content: space-around; text-align: center; clear: both; }
-        .firma-line { border-top: 1px solid black; width: 200px; margin-top: 60px; font-size: 10pt; }
-
-        /* Ajustes de Impresión */
         @media print {
-            body { background: white; margin: 0; }
-            .preview-container { padding: 0; }
-            .a4-page { box-shadow: none; margin: 0; width: 100%; }
-            .no-print { display: none !important; }
-            .hours-table th, .grand-total { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            body { background: white; }
+            .preview-container { display: block; padding: 0; }
+            .a4-page { box-shadow: none; margin: 0; width: 100%; min-height: 100%; }
         }
     </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        window.onload = function() {
+            lucide.createIcons();
+            // setTimeout(function() { window.print(); }, 500);
+        };
+    </script>
 </head>
 <body>
 
     <div class="no-print" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
         <a href="cargar_horas.php" class="btn" style="background: #333; color: white; margin-right: 10px; border: 1px solid #fff;">&larr; Volver</a>
-        <button onclick="window.print()" class="btn" style="background: white; color: black; font-weight: bold; border: 2px solid black;">Imprimir Liquidación</button>
+        <button onclick="window.print()" class="btn" style="background: white; color: black; font-weight: bold; border: 2px solid black;">
+            Imprimir <i data-lucide="printer" style="width:16px; height:16px; vertical-align:middle;"></i>
+        </button>
     </div>
 
     <div class="preview-container">

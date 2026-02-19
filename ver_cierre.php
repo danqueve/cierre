@@ -4,7 +4,7 @@ if (!isset($_SESSION['user_id'])) { header("Location: index.php"); exit; }
 
 $id = $_GET['id'] ?? 0;
 
-// FIX: Si no se pasa un ID (id=0), intentamos buscar el ULTIMO cierre cargado
+// Si no se pasa un ID, buscamos el último cierre cargado
 if ($id == 0) {
     $stmtLast = $pdo->query("SELECT id FROM cierres_semanales ORDER BY id DESC LIMIT 1");
     $lastEntry = $stmtLast->fetch();
@@ -28,7 +28,7 @@ if (!$cierre) {
     ");
 }
 
-// Obtener detalles ordenados
+// Obtener detalles ordenados por día
 $stmtDet = $pdo->prepare("
     SELECT * FROM detalles_diarios 
     WHERE cierre_id = ? 
@@ -49,250 +49,187 @@ foreach($detalles as $d) {
 }
 
 $totalCobrado = $totalEf + $totalTr;
-$comision = $totalCobrado * 0.05; // 5% del Total
+$comision = $totalCobrado * 0.05; 
 $saldoFavor = $cierre['saldo_favor'];
-$descuentoCreditos = $cierre['descuento_creditos'] ?? 0; // Nuevo campo
+$descuentoCreditos = $cierre['descuento_creditos'] ?? 0;
 
-// 1. LIQUIDACIÓN DEL COBRADOR (SUELDO)
-// Sueldo = (Comisión + Saldo Favor) - (Gastos + Descuento Créditos)
 $sueldoCobrador = ($comision + $saldoFavor) - ($totalGasto + $descuentoCreditos);
-
-// 2. NETO A RENDIR A LA EMPRESA
-// La empresa recibe el Total Cobrado MENOS lo que efectivamente se le paga al cobrador (Comisión + Saldo).
-// PERO, si hay un descuento de crédito, la empresa RETIENE ese dinero, por lo que SUMA al neto a rendir (o resta menos).
-// Matemáticamente: Total - (Comision + Saldo) + DescuentoCredito
 $netoRendir = $totalCobrado - ($comision + $saldoFavor) + $descuentoCreditos;
-
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Liquidación - <?= $cierre['zona'] ?></title>
-    <link rel="stylesheet" href="style.css">
+    <title>Liquidación - <?= htmlspecialchars($cierre['zona']) ?></title>
+    <link rel="stylesheet" href="style.css?v=<?= time() ?>">
     <style>
-        /* Estilos generales */
-        html, body {
+        /* --- ESTILOS GENERALES DE LA PÁGINA --- */
+        body { 
+            background-color: #525659; 
             margin: 0;
-            padding: 0;
-            background-color: #525659;
-            height: 100%;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
-        .preview-container {
-            display: flex;
-            justify-content: center;
-            padding: 40px 0;
-            min-height: 100vh;
+        
+        .preview-container { 
+            display: flex; 
+            justify-content: center; 
+            padding: 40px 0; 
+            min-height: 100vh; 
         }
         
-        /* --- HOJA A4 --- */
         .a4-page {
-            position: relative;
             width: 210mm;
             min-height: 297mm;
             padding: 20mm;
             margin: 0 auto;
             background: white;
             box-shadow: 0 0 15px rgba(0,0,0,0.3);
-            box-sizing: border-box;
             color: #333;
+            position: relative;
+            box-sizing: border-box;
         }
 
-        /* Encabezado */
+        /* --- CABECERA DEL DOCUMENTO --- */
         .doc-header { 
             text-align: center; 
             margin-bottom: 25px; 
             border-bottom: 3px solid #2c3e50; 
             padding-bottom: 15px; 
-            position: relative; 
-            z-index: 2; 
         }
         .doc-header h2 { 
             margin: 0; 
             font-size: 24pt; 
-            text-transform: uppercase; 
-            color: #2c3e50; 
-            letter-spacing: 1px;
+            color: #066bcf; /* Azul como en la captura */
         }
         .doc-header p { 
-            color: #555; 
+            color: #333; 
             margin: 8px 0 0 0; 
             font-size: 13pt; 
-            font-weight: 500;
         }
         
-        /* Info Documento */
         .doc-info { 
             display: flex; 
             justify-content: space-between; 
             margin-bottom: 25px; 
             font-size: 11pt; 
-            color: #444; 
             background-color: #f8f9fa;
-            padding: 10px 15px;
+            padding: 12px;
             border-radius: 6px;
-            border: 1px solid #e9ecef;
-            position: relative; 
-            z-index: 2; 
-        }
-        
-        /* Marca de Agua Centrada */
-        .watermark {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0.06;
-        }
-        .watermark img { 
-            max-width: 70%; 
-            max-height: 70%; 
-            object-fit: contain; 
-            filter: grayscale(100%);
         }
 
-        /* Tabla Principal */
+        /* --- ESTILOS DE TABLA (TEXTO NEGRO) --- */
         .main-table { 
             width: 100%; 
             border-collapse: collapse; 
             margin-bottom: 30px; 
-            position: relative; 
-            z-index: 2; 
-            font-size: 10pt; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            background-color: #fff;
         }
+
         .main-table th { 
-            background-color: #2c3e50; 
-            color: white; 
-            border: 1px solid #2c3e50; 
-            padding: 10px 8px; 
+            background-color: #f2f2f2; 
+            color: #000; /* Texto Negro */
+            border: 1px solid #ccc; 
+            padding: 12px 8px; 
             text-transform: uppercase; 
-            letter-spacing: 0.5px;
+            font-weight: bold;
+            text-align: center;
         }
+
         .main-table td { 
             border: 1px solid #dee2e6; 
             padding: 10px 8px; 
-            color: #333; 
+            color: #000; /* Texto Negro */
+            vertical-align: middle;
         }
-        .main-table tr:nth-child(even) { background-color: #f8f9fa; }
+
+        .main-table tr:nth-child(even) { 
+            background-color: #f9f9f9; 
+        }
+
         .main-table tfoot td { 
-            background-color: #e9ecef; 
+            background-color: #eeeeee; 
             font-weight: bold; 
-            border-top: 2px solid #2c3e50; 
-            color: #2c3e50; 
+            border-top: 2px solid #000; 
+            color: #000; /* Texto Negro */
             font-size: 11pt;
         }
 
-        /* Sección de Liquidación */
+        /* --- SECCIÓN DE LIQUIDACIÓN --- */
         .liquidation-section {
-            display: flex;
-            gap: 25px;
-            margin-top: 20px;
-            position: relative;
-            z-index: 2;
+            display: flex; 
+            justify-content: space-between; 
+            gap: 20px; 
+            margin-top: 30px;
         }
-
+        
         .liq-box {
-            border: 1px solid #ced4da;
-            padding: 0;
-            flex: 1;
+            border: 1px solid #ccc;
             border-radius: 8px;
             overflow: hidden;
-            background-color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            width: 48%;
+            background: #fff;
         }
 
         .liq-title {
-            text-align: center;
-            font-weight: bold;
             padding: 10px;
-            text-transform: uppercase;
-            font-size: 11pt;
+            font-weight: bold;
+            text-align: center;
             color: white;
-            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
-        .liq-content {
-            padding: 15px;
-        }
+        .box-cobrador .liq-title { background-color: #6c757d; }
+        .box-empresa .liq-title { background-color: #2c3e50; }
+
+        .liq-content { padding: 15px; }
 
         .liq-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 10.5pt;
-            color: #444;
-            padding-bottom: 5px;
-            border-bottom: 1px dashed #e9ecef;
+            padding: 6px 0;
+            border-bottom: 1px dashed #eee;
+            color: #000;
         }
-        .liq-row:last-child { border-bottom: none; }
-        
+
         .liq-total {
-            background-color: #f1f3f5;
-            padding: 12px 15px;
-            border-top: 1px solid #ced4da;
+            background-color: #f8f9fa;
+            padding: 12px;
             font-weight: bold;
             font-size: 13pt;
             display: flex;
             justify-content: space-between;
-            color: #2c3e50;
+            border-top: 2px solid #333;
+            color: #000;
         }
 
-        /* Estilos específicos para cajas */
-        .box-cobrador { border-color: #6c757d; }
-        .box-cobrador .liq-title { background-color: #6c757d; }
-        
-        .box-empresa { border-color: #2c3e50; }
-        .box-empresa .liq-title { background-color: #2c3e50; }
-
-        /* Firmas */
         .firma-box { 
             margin-top: 80px; 
             display: flex; 
-            justify-content: space-around; 
+            justify-content: center; 
             text-align: center; 
-            color: #333; 
-            position: relative; 
-            z-index: 2; 
         }
         .firma-line { 
-            border-top: 1px solid #333; 
-            width: 220px; 
-            margin-top: 50px; 
+            border-top: 1px solid #000; 
+            width: 250px; 
             padding-top: 8px; 
-            font-size: 10pt; 
-            text-transform: uppercase;
         }
-        
-        /* IMPRESIÓN */
+
+        /* --- ESTILOS DE IMPRESIÓN --- */
         @media print {
-            body { background-color: white; margin: 0; padding: 0; }
-            .preview-container { padding: 0; display: block; }
-            .a4-page { box-shadow: none; margin: 0; width: 100%; min-height: 100%; page-break-after: always; }
+            body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .preview-container { display: block !important; padding: 0 !important; }
+            .a4-page { box-shadow: none !important; border: none !important; width: 100% !important; margin: 0 !important; padding: 10mm !important; }
             .no-print { display: none !important; }
-            .main-table th { background-color: #eee !important; color: black !important; border-color: #000; }
-            .liq-title { background-color: #eee !important; color: black !important; border-bottom: 1px solid #000; }
-            .liq-total { background-color: #eee !important; }
+            
+            .main-table th { background-color: #e0e0e0 !important; border: 1px solid #000 !important; }
+            .main-table td { border: 1px solid #000 !important; }
+            .liq-box { border: 1px solid #000 !important; }
         }
     </style>
-    <script>
-        window.onload = function() {
-            setTimeout(function() {
-                window.print();
-            }, 500);
-        };
-    </script>
 </head>
 <body> 
 
+    <!-- Botones Flotantes -->
     <div class="no-print" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
         <button onclick="window.close()" style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
             Cerrar Pestaña
@@ -303,26 +240,20 @@ $netoRendir = $totalCobrado - ($comision + $saldoFavor) + $descuentoCreditos;
     </div>
 
     <div class="preview-container">
-        <!-- INICIO HOJA A4 -->
         <div class="a4-page">
             
-            <!-- MARCA DE AGUA CENTRADA -->
-            <div class="watermark">
-                 <img src="img/logo.png" alt="Logo"> 
-            </div>
-
             <div class="doc-header">
                 <h2>Liquidación Semanal de Cobranza</h2>
-                <p>Gestión de Zona: <strong><?= $cierre['zona'] ?></strong></p>
+                <p>Gestión de Zona: <strong><?= htmlspecialchars($cierre['zona']) ?></strong></p>
             </div>
 
             <div class="doc-info">
                 <div><strong>Semana del:</strong> <?= date('d/m/Y', strtotime($cierre['fecha_inicio'])) ?></div>
                 <div><strong>Fecha Emisión:</strong> <?= date('d/m/Y') ?></div>
-                <div><strong>Usuario:</strong> <?= $_SESSION['username'] ?? 'Admin' ?></div>
+                <div><strong>Usuario:</strong> <?= htmlspecialchars($_SESSION['username'] ?? 'Admin') ?></div>
             </div>
 
-            <!-- Tabla de Detalles -->
+            <!-- Tabla de Detalles con texto negro -->
             <table class="main-table">
                 <thead>
                     <tr>
@@ -342,9 +273,9 @@ $netoRendir = $totalCobrado - ($comision + $saldoFavor) + $descuentoCreditos;
                         <td style="font-weight: 600;"><?= $d['dia_semana'] ?></td>
                         <td style="text-align: right;"><?= formatCurrency($d['efectivo']) ?></td>
                         <td style="text-align: right;"><?= formatCurrency($d['transferencia']) ?></td>
-                        <td style="text-align: right; font-weight: bold; background-color: rgba(0,0,0,0.03);"><?= formatCurrency($sub) ?></td>
-                        <td style="text-align: right; color: #c0392b;"><?= $d['gasto_monto'] > 0 ? formatCurrency($d['gasto_monto']) : '-' ?></td>
-                        <td style="font-style: italic; font-size: 9pt;"><?= $d['gasto_concepto'] ?></td>
+                        <td style="text-align: right; font-weight: bold;"><?= formatCurrency($sub) ?></td>
+                        <td style="text-align: right;"><?= $d['gasto_monto'] > 0 ? formatCurrency($d['gasto_monto']) : '-' ?></td>
+                        <td style="font-style: italic; font-size: 9pt;"><?= htmlspecialchars($d['gasto_concepto']) ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -354,13 +285,13 @@ $netoRendir = $totalCobrado - ($comision + $saldoFavor) + $descuentoCreditos;
                         <td style="text-align: right;"><?= formatCurrency($totalEf) ?></td>
                         <td style="text-align: right;"><?= formatCurrency($totalTr) ?></td>
                         <td style="text-align: right;"><?= formatCurrency($totalCobrado) ?></td>
-                        <td style="text-align: right; color: #c0392b;"><?= formatCurrency($totalGasto) ?></td>
+                        <td style="text-align: right;"><?= formatCurrency($totalGasto) ?></td>
                         <td></td>
                     </tr>
                 </tfoot>
             </table>
 
-            <!-- SECCIÓN NUEVA: CÁLCULOS SEPARADOS -->
+            <!-- SECCIÓN DE LIQUIDACIÓN -->
             <div class="liquidation-section">
                 
                 <!-- 1. LIQUIDACIÓN DEL COBRADOR -->
@@ -377,23 +308,22 @@ $netoRendir = $totalCobrado - ($comision + $saldoFavor) + $descuentoCreditos;
                         </div>
                         <?php if($cierre['saldo_concepto']): ?>
                             <div style="font-size: 9pt; color: #666; font-style: italic; text-align: right; margin-top: -5px;">
-                                (<?= $cierre['saldo_concepto'] ?>)
+                                (<?= htmlspecialchars($cierre['saldo_concepto']) ?>)
                             </div>
                         <?php endif; ?>
                         
-                        <div class="liq-row" style="color: #c0392b;">
+                        <div class="liq-row">
                             <span>(-) Desc. Gastos:</span>
                             <span>- <?= formatCurrency($totalGasto) ?></span>
                         </div>
 
-                        <!-- NUEVA FILA: DESCUENTO CRÉDITOS -->
-                        <div class="liq-row" style="color: #c0392b;">
+                        <div class="liq-row">
                             <span>(-) Desc. Créditos:</span>
                             <span>- <?= formatCurrency($descuentoCreditos) ?></span>
                         </div>
                         <?php if($cierre['descuento_creditos_concepto']): ?>
                             <div style="font-size: 9pt; color: #666; font-style: italic; text-align: right; margin-top: -5px;">
-                                (<?= $cierre['descuento_creditos_concepto'] ?>)
+                                (<?= htmlspecialchars($cierre['descuento_creditos_concepto']) ?>)
                             </div>
                         <?php endif; ?>
 
@@ -420,8 +350,7 @@ $netoRendir = $totalCobrado - ($comision + $saldoFavor) + $descuentoCreditos;
                             <span>(-) Saldo a Favor:</span>
                             <span>- <?= formatCurrency($saldoFavor) ?></span>
                         </div>
-                        <!-- NUEVA FILA: SUMA POR RETENCIÓN DE CRÉDITO -->
-                        <div class="liq-row" style="color: #27ae60;">
+                        <div class="liq-row">
                             <span>(+) Retención Créditos:</span>
                             <span>+ <?= formatCurrency($descuentoCreditos) ?></span>
                         </div>
@@ -444,12 +373,7 @@ $netoRendir = $totalCobrado - ($comision + $saldoFavor) + $descuentoCreditos;
                 </div>
             </div>
 
-            <div style="position: absolute; bottom: 15mm; left: 20mm; font-size: 9pt; color: #777;">
-                Documento generado automáticamente - Uso interno exclusivo.
-            </div>
-
         </div>
-        <!-- FIN HOJA A4 -->
     </div>
 
 </body>

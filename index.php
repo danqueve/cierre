@@ -228,7 +228,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 0.8rem;
             color: #64748b;
         }
+        }
     </style>
+    <script src="main.js" defer></script>
 </head>
 <body>
 
@@ -245,10 +247,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h1>Bienvenido</h1>
         <p>Sistema de Gestión de Cierres</p>
 
+        <div id="toast-container" class="toast-container"></div>
+
         <?php if($error): ?>
-            <div class="alert">
-                <?= htmlspecialchars($error) ?>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    showToast("<?= addslashes($error) ?>", 'error');
+                });
+            </script>
         <?php endif; ?>
 
         <form method="POST">

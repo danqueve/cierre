@@ -35,21 +35,13 @@ $cierres = $stmt->fetchAll();
     <meta charset="UTF-8">
     <title>Historial de Cierres</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* Estilos específicos para centrar la tabla en historial */
-        table {
-            text-align: center; /* Centra el contenido general */
-        }
-        th, td {
-            text-align: center !important; /* Fuerza el centrado en celdas y cabeceras */
-            vertical-align: middle; /* Centrado vertical */
-        }
-        /* Ajuste para que la columna de acciones se vea bien centrada */
-        td .btn {
-            display: inline-block;
-            margin: 0 auto;
-        }
+        /* Ajustes específicos para esta página si fuera necesario */
     </style>
+    <script>
+        window.onload = function() { lucide.createIcons(); }
+    </script>
 </head>
 <body>
     
@@ -60,45 +52,74 @@ $cierres = $stmt->fetchAll();
             <div class="card-header" style="text-align: center;">Historial de Liquidaciones (Cobranzas)</div>
             
             <?php if(count($cierres) > 0): ?>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Fecha Semana</th>
-                        <th>Zona</th>
-                        <th>Total Recaudado</th>
-                        <th>Fecha Carga</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach($cierres as $c): ?>
-                    <tr>
-                        <td style="font-weight: bold; color: var(--text-main);">
-                            <?= date('d/m/Y', strtotime($c['fecha_inicio'])) ?> 
-                            <div style="color: var(--text-muted); font-size: 0.8em; font-weight: normal;">(Lunes)</div>
-                        </td>
-                        <td>
-                            <span style="color: var(--accent-blue);"><?= $c['zona'] ?></span>
-                        </td>
-                        <td class="text-green" style="font-weight: bold;">
-                            <?= formatCurrency($c['total_recaudado']) ?>
-                        </td>
-                        <td style="color: var(--text-muted); font-size: 0.9em;">
-                            <?= date('d/m/Y H:i', strtotime($c['fecha_creacion'])) ?>
-                        </td>
-                        <td>
-                            <!-- Agregado target="_blank" para abrir en nueva pestaña -->
-                            <a href="ver_cierre.php?id=<?= $c['id'] ?>" target="_blank" class="btn btn-primary" style="padding: 6px 15px; font-size: 0.9rem;">
-                                Ver Liquidación
-                            </a>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+            <div style="overflow-x: auto;">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha Semana</th>
+                            <th>Zona</th>
+                            <th>Total Recaudado</th>
+                            <th>Fecha Carga</th>
+                            <th style="text-align: center;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach($cierres as $c): ?>
+                        <tr>
+                            <td style="font-weight: 600;">
+                                <?= date('d/m/Y', strtotime($c['fecha_inicio'])) ?> 
+                                <span style="color: var(--text-muted); font-size: 0.85em; font-weight: normal; margin-left: 5px;">(Lunes)</span>
+                                
+                                <?php 
+                                    // Lógica para badge "NUEVO"
+                                    $horas_desde_creacion = (time() - strtotime($c['fecha_creacion'])) / 3600;
+                                    if($horas_desde_creacion < 24): 
+                                ?>
+                                    <span class="badge-new">Nuevo</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <span class="badge-zona"><?= $c['zona'] ?></span>
+                            </td>
+                            <td class="text-green" style="font-weight: 700; font-size: 1.05rem;">
+                                <?= formatCurrency($c['total_recaudado']) ?>
+                            </td>
+                            <td style="color: var(--text-muted); font-size: 0.9em;">
+                                <i data-lucide="clock" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></i>
+                                <?= date('d/m/Y H:i', strtotime($c['fecha_creacion'])) ?>
+                            </td>
+                            <td style="text-align: center;">
+                                <div style="display: flex; gap: 5px; justify-content: center;">
+                                    <a href="ver_cierre.php?id=<?= $c['id'] ?>" target="_blank" class="btn-action" title="Ver Detalle">
+                                        <i data-lucide="external-link" style="width: 16px; height: 16px;"></i>
+                                    </a>
+                                    
+                                    <a href="eliminar_cierre.php?id=<?= $c['id'] ?>" 
+                                       class="btn-action" 
+                                       style="color: var(--accent-red); border-color: rgba(247, 118, 142, 0.2); background: rgba(247, 118, 142, 0.1);"
+                                       onclick="return confirm('¿Estás seguro de que deseas eliminar esta liquidación permanentemente?');"
+                                       title="Eliminar">
+                                        <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
             <?php else: ?>
-                <div style="padding: 40px; text-align: center; color: var(--text-muted);">
-                    Aún no hay cierres de cobranza cargados en el sistema.
+                <div class="empty-state">
+                    <i data-lucide="folder-open" class="empty-state-icon"></i>
+                    <div class="empty-state-title">No hay liquidaciones registradas</div>
+                    <div class="empty-state-description">
+                        Aún no se han cargado cierres de cobranza en el sistema.<br>
+                        Comienza cargando una nueva liquidación semanal.
+                    </div>
+                    <a href="cargar.php" class="empty-state-button">
+                        <i data-lucide="plus-circle" style="width: 18px; height: 18px; vertical-align: text-bottom; margin-right: 5px;"></i>
+                        Nueva Carga
+                    </a>
                 </div>
             <?php endif; ?>
         </div>

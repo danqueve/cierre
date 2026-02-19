@@ -101,6 +101,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <title>Cargar Cierre Semanal</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="main.js" defer></script>
     <script>
         function toggleModo() {
             const modo = document.querySelector('input[name="modo_carga"]:checked').value;
@@ -109,12 +111,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             if (modo === 'semanal') {
                 contenedorSemanal.style.display = 'block';
+                contenedorSemanal.classList.add('slide-up'); // Add animation
                 contenedorDiario.style.display = 'none';
+                contenedorDiario.classList.remove('slide-up');
                 enableInputs(contenedorSemanal, true);
                 enableInputs(contenedorDiario, false);
             } else {
                 contenedorSemanal.style.display = 'none';
+                contenedorSemanal.classList.remove('slide-up');
                 contenedorDiario.style.display = 'block';
+                contenedorDiario.classList.add('slide-up'); // Add animation
                 enableInputs(contenedorSemanal, false);
                 enableInputs(contenedorDiario, true);
                 actualizarFechaDia();
@@ -190,20 +196,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             toggleModo();
             document.querySelector('input[name="fecha_inicio"]').addEventListener('change', actualizarFechaDia);
             document.querySelector('select[name="dia_seleccionado"]').addEventListener('change', actualizarFechaDia);
+            lucide.createIcons();
+            // main.js handles global form submission and loading states now
         };
     </script>
 </head>
-<body>
+<body class="fade-in">
     
     <?php include 'header.php'; ?>
 
     <div class="container">
         
+    <div id="toast-container" class="toast-container"></div>
+        
         <?php if($mensaje): ?>
-            <!-- Mensaje de éxito visible -->
-            <div class="card" style="border-color: var(--accent-green); color: var(--accent-green); text-align: center; background-color: rgba(16, 185, 129, 0.1);">
-                <?= $mensaje ?>
-            </div>
+            <script>
+                // Mostrar Toast automáticamente si hay mensaje PHP
+                document.addEventListener('DOMContentLoaded', function() {
+                    const msg = "<?= addslashes($mensaje) ?>";
+                    const isError = "<?= strpos($mensaje, 'Error') !== false ? 'true' : 'false' ?>";
+                    showToast(msg, isError === 'true' ? 'error' : 'success');
+                });
+            </script>
         <?php endif; ?>
 
         <form method="POST">
@@ -211,28 +225,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="card-header">Carga de Cobranzas</div>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px;">
-                    <div>
+                    <div class="input-group">
                         <label>Zona de Cobranza</label>
-                        <select name="zona" required style="font-size: 1.1em; padding: 12px;">
+                        <i data-lucide="map-pin" class="input-icon"></i>
+                        <select name="zona" required class="input-with-icon">
                             <?php foreach($zonas as $z): ?>
                                 <option value="<?= $z ?>"><?= $z ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div>
+                    <div class="input-group">
                         <label>Inicio de Semana (Lunes)</label>
-                        <input type="date" name="fecha_inicio" required value="<?= date('Y-m-d', strtotime('monday this week')) ?>" style="font-size: 1.1em; padding: 12px;">
+                        <i data-lucide="calendar" class="input-icon"></i>
+                        <input type="date" name="fecha_inicio" required value="<?= date('Y-m-d', strtotime('monday this week')) ?>" class="input-with-icon">
                     </div>
                 </div>
 
-                <div style="margin-bottom: 25px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; gap: 30px; align-items: center; justify-content: center;">
-                    <label style="color: var(--text-main); font-weight: bold; margin: 0; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                        <input type="radio" name="modo_carga" value="semanal" checked onchange="toggleModo()" style="width: 20px; height: 20px;">
-                        Carga Semana Completa
+                <div class="segmented-control">
+                    <input type="radio" name="modo_carga" id="modo_semanal" value="semanal" checked onchange="toggleModo()">
+                    <label for="modo_semanal">
+                        <i data-lucide="calendar-days" style="width:16px;"></i> Semana Completa
                     </label>
-                    <label style="color: var(--text-main); font-weight: bold; margin: 0; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                        <input type="radio" name="modo_carga" value="diario" onchange="toggleModo()" style="width: 20px; height: 20px;">
-                        Carga Día por Día
+                    
+                    <input type="radio" name="modo_carga" id="modo_diario" value="diario" onchange="toggleModo()">
+                    <label for="modo_diario">
+                        <i data-lucide="calendar" style="width:16px;"></i> Día por Día
                     </label>
                 </div>
 
@@ -253,10 +270,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <?php foreach($dias as $dia): ?>
                                 <tr>
                                     <td style="font-weight: 600; color: var(--accent-blue);"><?= $dia ?></td>
-                                    <td><input type="number" step="0.01" name="data[<?= $dia ?>][efectivo]" class="calculable" oninput="calcularTotales()" placeholder="$ 0"></td>
-                                    <td><input type="number" step="0.01" name="data[<?= $dia ?>][transferencia]" class="calculable" oninput="calcularTotales()" placeholder="$ 0"></td>
-                                    <td><input type="number" step="0.01" name="data[<?= $dia ?>][gasto_monto]" class="calculable" oninput="calcularTotales()" style="color: var(--accent-red); border-color: rgba(247, 118, 142, 0.3);" placeholder="$ 0"></td>
-                                    <td><input type="text" name="data[<?= $dia ?>][gasto_concepto]" placeholder="Detalle..."></td>
+                                    <td>
+                                        <div class="input-group" style="margin-bottom: 0;">
+                                            <i data-lucide="banknote" class="input-icon" style="width: 16px;"></i>
+                                            <input type="number" step="0.01" name="data[<?= $dia ?>][efectivo]" class="calculable input-with-icon" oninput="calcularTotales()" placeholder="0">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group" style="margin-bottom: 0;">
+                                            <i data-lucide="credit-card" class="input-icon" style="width: 16px;"></i>
+                                            <input type="number" step="0.01" name="data[<?= $dia ?>][transferencia]" class="calculable input-with-icon" oninput="calcularTotales()" placeholder="0">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group" style="margin-bottom: 0;">
+                                            <i data-lucide="trending-down" class="input-icon" style="width: 16px; color: var(--accent-red);"></i>
+                                            <input type="number" step="0.01" name="data[<?= $dia ?>][gasto_monto]" class="calculable input-with-icon" oninput="calcularTotales()" style="color: var(--accent-red); border-bottom-color: rgba(247, 118, 142, 0.3);" placeholder="0">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group" style="margin-bottom: 0;">
+                                            <i data-lucide="tag" class="input-icon" style="width: 16px;"></i>
+                                            <input type="text" name="data[<?= $dia ?>][gasto_concepto]" class="input-with-icon" placeholder="Detalle...">
+                                        </div>
+                                    </td>
                                 </tr>
                                 <?php endforeach; ?>
                             </tbody>
@@ -277,9 +314,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div style="background: rgba(0,0,0,0.2); padding: 25px; border-radius: 12px; border: 1px solid var(--accent-blue);">
                         <h3 style="margin-top: 0; color: var(--accent-blue); margin-bottom: 20px;">Cargar Día Individual</h3>
                         
-                        <div style="margin-bottom: 20px;">
+                        <div class="input-group">
                             <label>Seleccione el Día a Cargar</label>
-                            <select name="dia_seleccionado" style="font-size: 1.1em; padding: 12px; border-color: var(--accent-blue);">
+                            <i data-lucide="calendar" class="input-icon"></i>
+                            <select name="dia_seleccionado" class="input-with-icon" style="border-color: var(--accent-blue);">
                                 <?php foreach($dias as $dia): ?>
                                     <option value="<?= $dia ?>"><?= $dia ?></option>
                                 <?php endforeach; ?>
@@ -288,21 +326,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
 
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-                            <div>
+                            <div class="input-group">
                                 <label>Monto Efectivo</label>
-                                <input type="number" step="0.01" name="dia_efectivo" class="calculable" placeholder="$ 0.00">
+                                <i data-lucide="banknote" class="input-icon"></i>
+                                <input type="number" step="0.01" name="dia_efectivo" class="calculable input-with-icon" placeholder="0.00">
                             </div>
-                            <div>
+                            <div class="input-group">
                                 <label>Monto Transferencia</label>
-                                <input type="number" step="0.01" name="dia_transferencia" class="calculable" placeholder="$ 0.00">
+                                <i data-lucide="credit-card" class="input-icon"></i>
+                                <input type="number" step="0.01" name="dia_transferencia" class="calculable input-with-icon" placeholder="0.00">
                             </div>
-                            <div>
+                            <div class="input-group">
                                 <label style="color: var(--accent-red);">Gasto (Monto)</label>
-                                <input type="number" step="0.01" name="dia_gasto_monto" class="calculable" placeholder="$ 0.00" style="border-color: var(--accent-red); color: var(--accent-red);">
+                                <i data-lucide="trending-down" class="input-icon" style="color: var(--accent-red);"></i>
+                                <input type="number" step="0.01" name="dia_gasto_monto" class="calculable input-with-icon" placeholder="0.00" style="border-bottom-color: var(--accent-red); color: var(--accent-red);">
                             </div>
-                            <div>
+                            <div class="input-group">
                                 <label>Concepto Gasto</label>
-                                <input type="text" name="dia_gasto_concepto" placeholder="Ej. Nafta">
+                                <i data-lucide="tag" class="input-icon"></i>
+                                <input type="text" name="dia_gasto_concepto" class="input-with-icon" placeholder="Ej. Nafta">
                             </div>
                         </div>
                     </div>
@@ -314,25 +356,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     <!-- Fila 1: Saldo a Favor -->
                     <div style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 15px;">
-                        <div style="flex: 1; min-width: 150px;">
+                        <div class="input-group" style="flex: 1; min-width: 150px;">
                             <label class="text-green" style="font-weight: bold;">Saldo a Favor (+)</label>
-                            <input type="number" step="0.01" name="saldo_favor" placeholder="0.00" style="border-color: var(--accent-green);">
+                            <i data-lucide="plus-circle" class="input-icon" style="color: var(--accent-green);"></i>
+                            <input type="number" step="0.01" name="saldo_favor" placeholder="0.00" class="input-with-icon" style="border-bottom-color: var(--accent-green);">
                         </div>
-                        <div style="flex: 3; min-width: 250px;">
+                        <div class="input-group" style="flex: 3; min-width: 250px;">
                             <label>Concepto del Saldo a Favor</label>
-                            <input type="text" name="saldo_concepto" placeholder="Ej. Bono por objetivos ventas">
+                            <i data-lucide="tag" class="input-icon"></i>
+                            <input type="text" name="saldo_concepto" class="input-with-icon" placeholder="Ej. Bono por objetivos ventas">
                         </div>
                     </div>
 
                     <!-- Fila 2: Descuento Créditos -->
                     <div style="display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap;">
-                        <div style="flex: 1; min-width: 150px;">
+                        <div class="input-group" style="flex: 1; min-width: 150px;">
                             <label class="text-red" style="font-weight: bold;">Descuento Créditos (-)</label>
-                            <input type="number" step="0.01" name="descuento_creditos" placeholder="0.00" style="border-color: var(--accent-red); color: #ff6b6b;">
+                            <i data-lucide="minus-circle" class="input-icon" style="color: var(--accent-red);"></i>
+                            <input type="number" step="0.01" name="descuento_creditos" placeholder="0.00" class="input-with-icon" style="border-bottom-color: var(--accent-red); color: #ff6b6b;">
                         </div>
-                        <div style="flex: 3; min-width: 250px;">
+                        <div class="input-group" style="flex: 3; min-width: 250px;">
                             <label>Concepto Descuento</label>
-                            <input type="text" name="descuento_creditos_concepto" placeholder="Ej. Cuota 1/3 Préstamo">
+                            <i data-lucide="tag" class="input-icon"></i>
+                            <input type="text" name="descuento_creditos_concepto" class="input-with-icon" placeholder="Ej. Cuota 1/3 Préstamo">
                         </div>
                     </div>
                 </div>

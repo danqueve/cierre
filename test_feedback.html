@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Feedback Test</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="main.js" defer></script>
+</head>
+
+<body class="fade-in" style="padding: 20px; text-align: center; background-color: #0a0a0c;">
+
+    <h1>Visual Feedback Verification</h1>
+    <p class="text-muted">Test Toasts, Validation, and Loading States.</p>
+
+    <!-- 1. TOASTS -->
+    <div class="card" style="max-width: 500px; margin: 20px auto;">
+        <div class="card-header">1. Toast Notifications</div>
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn"
+                style="background: rgba(158, 206, 106, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green);"
+                onclick="showToast('Operación exitosa', 'success')">Success</button>
+            <button class="btn"
+                style="background: rgba(247, 118, 142, 0.2); color: var(--accent-red); border: 1px solid var(--accent-red);"
+                onclick="showToast('Error de conexión', 'error')">Error</button>
+            <button class="btn"
+                style="background: rgba(122, 162, 247, 0.2); color: var(--accent-blue); border: 1px solid var(--accent-blue);"
+                onclick="showToast('Información del sistema', 'info')">Info</button>
+        </div>
+    </div>
+
+    <!-- 2. FORM VALIDATION & LOADING -->
+    <div class="card" style="max-width: 500px; margin: 20px auto;">
+        <div class="card-header">2. Form Validation & Loading</div>
+        <form id="testForm" onsubmit="event.preventDefault();"> <!-- Prevent actual submit for demo -->
+
+            <div class="input-group">
+                <label>Nombre (Requerido)</label>
+                <div style="position: relative;">
+                    <i data-lucide="user" class="input-icon"></i>
+                    <input type="text" name="nombre" required class="input-with-icon"
+                        placeholder="Intenta dejarlo vacío y salir...">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Email (Requerido)</label>
+                <div style="position: relative;">
+                    <i data-lucide="mail" class="input-icon"></i>
+                    <input type="text" name="email" required class="input-with-icon" placeholder="ejemplo@email.com">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                Probar Submit (Loading State)
+            </button>
+        </form>
+    </div>
+
+    <script>
+        window.onload = function () {
+            lucide.createIcons();
+
+            // Simulator loading on the test form
+            const form = document.getElementById('testForm');
+            form.addEventListener('submit', function () {
+                // Manually trigger the loading state visualization from main.js logic
+                // Since main.js attaches to all forms, it should work automatically if inputs are valid.
+
+                // Reset after 3 seconds for re-testing
+                const btn = this.querySelector('button');
+                setTimeout(() => {
+                    btn.classList.remove('btn-loading');
+                    btn.innerHTML = btn.dataset.text || 'Probar Submit (Loading State)';
+                    showToast('Proceso simulado finalizado', 'success');
+                }, 3000);
+            });
+        };
+    </script>
+
+</body>
+
+</html>

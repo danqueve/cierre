@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cierre System Design Test</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header Simulado -->
+    <header class="main-header">
+        <div class="header-glass">
+            <div class="header-brand">
+                <div class="brand-logo">C</div>
+                <div class="brand-text">Cierre<span class="brand-dot">.</span></div>
+            </div>
+            <nav class="header-nav">
+                <a href="#" class="nav-link active">Dashboard</a>
+                <a href="#" class="nav-link">Cobranzas</a>
+                <a href="#" class="nav-link">Reportes</a>
+            </nav>
+            <div class="header-user">
+                <div class="user-info">
+                    <span class="user-name">Usuario Test</span>
+                    <span class="user-role">Admin</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>Design System Verification</h1>
+        
+        <div class="card">
+            <div class="card-header">
+                Resumen de Cobranzas
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">
+                Vista previa de los estilos actualizados con Glassmorphism y nueva paleta.
+            </p>
+
+            <div class="stats-grid" style="margin-bottom: 30px;">
+                <div class="stat-item">
+                    <div style="color: var(--text-muted); font-size: 0.9rem;">Total Recaudado</div>
+                    <div class="stat-value text-green">$15,430.00</div>
+                </div>
+                <div class="stat-item">
+                    <div style="color: var(--text-muted); font-size: 0.9rem;">Pendiente</div>
+                    <div class="stat-value text-red">$2,100.00</div>
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Zona</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="text-align: left; color: var(--text-main);">Juan Perez</td>
+                        <td style="text-align: left;"><span class="badge-zona">Norte</span></td>
+                        <td>$500.00</td>
+                        <td class="text-green">Pagado</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; color: var(--text-main);">Maria Rodriguez</td>
+                        <td style="text-align: left;"><span class="badge-zona">Sur</span></td>
+                        <td>$1,200.00</td>
+                        <td class="text-yellow">Pendiente</td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; color: var(--text-main);">Carlos Gomez</td>
+                        <td style="text-align: left;"><span class="badge-zona">Este</span></td>
+                        <td>$350.00</td>
+                        <td class="text-red">Vencido</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="margin-top: 20px; text-align: right;">
+                <button class="btn btn-primary">Ver Detalles</button>
+            </div>
+        </div>
+
+        <div class="card">
+             <div class="card-header">Input Elements</div>
+             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                 <div>
+                     <label style="display: block; margin-bottom: 8px; color: var(--text-muted);">Nombre de usuario</label>
+                     <input type="text" placeholder="Ej. jperez">
+                 </div>
+                 <div>
+                     <label style="display: block; margin-bottom: 8px; color: var(--text-muted);">Zona</label>
+                     <select>
+                         <option>Norte</option>
+                         <option>Sur</option>
+                         <option>Este</option>
+                         <option>Oeste</option>
+                     </select>
+                 </div>
+             </div>
+        </div>
+
+    </div>
+</body>
+</html>

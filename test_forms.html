@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Design Test</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            padding: 40px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container" style="max-width: 800px; margin: 0 auto;">
+        <h1>Form Modernization Verification</h1>
+
+        <!-- TEST 1: Segmented Control -->
+        <div class="card">
+            <div class="card-header">1. Mode Selection (Toggle)</div>
+            <div style="padding: 20px;">
+                <div class="segmented-control">
+                    <input type="radio" name="modo_carga" id="modo_semanal" value="semanal" checked>
+                    <label for="modo_semanal">
+                        <i data-lucide="calendar-days" style="width:16px;"></i> Semana Completa
+                    </label>
+
+                    <input type="radio" name="modo_carga" id="modo_diario" value="diario">
+                    <label for="modo_diario">
+                        <i data-lucide="calendar" style="width:16px;"></i> Día por Día
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- TEST 2: Inputs with Icons -->
+        <div class="card">
+            <div class="card-header">2. Interactive Inputs</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+                <div class="input-group">
+                    <label>Monto Efectivo</label>
+                    <i data-lucide="banknote" class="input-icon"></i>
+                    <input type="number" class="input-with-icon" placeholder="0.00">
+                </div>
+
+                <div class="input-group">
+                    <label>Monto Transferencia</label>
+                    <i data-lucide="credit-card" class="input-icon"></i>
+                    <input type="number" class="input-with-icon" placeholder="0.00">
+                </div>
+
+                <div class="input-group">
+                    <label style="color: var(--accent-red);">Gasto (Monto)</label>
+                    <i data-lucide="trending-down" class="input-icon" style="color: var(--accent-red);"></i>
+                    <input type="number" class="input-with-icon" placeholder="0.00"
+                        style="border-bottom-color: var(--accent-red); color: var(--accent-red);">
+                </div>
+
+                <div class="input-group">
+                    <label>Usuario / Empleado</label>
+                    <i data-lucide="user" class="input-icon"></i>
+                    <select class="input-with-icon" style="background-color: transparent;">
+                        <option>Alejandro</option>
+                        <option>Emilia</option>
+                    </select>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- TEST 3: Time Inputs -->
+        <div class="card">
+            <div class="card-header">3. Time Inputs & Adjustments</div>
+
+            <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 30px;">
+                <div class="input-group" style="margin-bottom: 0; width: 100%;">
+                    <label>Horario Entrada</label>
+                    <i data-lucide="clock" class="input-icon"></i>
+                    <input type="time" class="input-with-icon">
+                </div>
+                <span>a</span>
+                <div class="input-group" style="margin-bottom: 0; width: 100%;">
+                    <label>Horario Salida</label>
+                    <i data-lucide="clock" class="input-icon"></i>
+                    <input type="time" class="input-with-icon">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 20px;">
+                <div class="input-group" style="flex: 1;">
+                    <label class="text-green">Saldo a Favor</label>
+                    <i data-lucide="plus-circle" class="input-icon" style="color: var(--accent-green);"></i>
+                    <input type="number" placeholder="0.00" class="input-with-icon"
+                        style="border-bottom-color: var(--accent-green);">
+                </div>
+                <div class="input-group" style="flex: 1;">
+                    <label class="text-red">Descuento</label>
+                    <i data-lucide="minus-circle" class="input-icon" style="color: var(--accent-red);"></i>
+                    <input type="number" placeholder="0.00" class="input-with-icon"
+                        style="border-bottom-color: var(--accent-red);">
+                </div>
+            </div>
+
+            <div style="text-align: right; margin-top: 20px;">
+                <button class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
