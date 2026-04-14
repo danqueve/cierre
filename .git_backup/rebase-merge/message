@@ -1,0 +1,16 @@
+actualizaciones con test y anti
+
+# Conflicts:
+#	cargar.php
+#	cargar_horas.php
+#	dashboard.php
+#	eliminar_cierre.php
+#	header.php
+#	historial.php
+#	index.php
+#	liquidar_horas.php
+#	main.js
+#	reportes_mensuales.php
+#	style.css
+#	test_feedback.html
+#	ver_cierre.php

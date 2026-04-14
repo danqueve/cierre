@@ -1,0 +1,5 @@
+0000000000000000000000000000000000000000 1b49b8b22b35f9d1d522bc870458ca73c245801f danqueve <danqueve@gmail.com> 1768242318 -0300	commit (initial): Se agregan funciones de horas para empleados administrativos y correcciones de estilo en liquidar_horas.php
+1b49b8b22b35f9d1d522bc870458ca73c245801f e9b706199b0ca2e69f0a3ae3659c8a12040d2142 Alejandro Quevedo <danqueve@gmail.com> 1768244476 -0300	commit: eliminacion de crear_admin.php y archivos sospechosos de llave ssh
+e9b706199b0ca2e69f0a3ae3659c8a12040d2142 76911136ff522a3c03bf7641475284e7a3c1c18d danqueve <danqueve@gmail.com> 1768245430 -0300	commit: inicio del proyecto
+76911136ff522a3c03bf7641475284e7a3c1c18d 76911136ff522a3c03bf7641475284e7a3c1c18d danqueve <danqueve@gmail.com> 1768246138 -0300	Branch: renamed refs/heads/main to refs/heads/main
+76911136ff522a3c03bf7641475284e7a3c1c18d 76911136ff522a3c03bf7641475284e7a3c1c18d danqueve <danqueve@gmail.com> 1768247219 -0300	Branch: renamed refs/heads/main to refs/heads/main
