@@ -10,6 +10,7 @@ if (isset($_SESSION['user_id'])) {
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
     $username = trim($_POST['username']);
     $password = $_POST['password'];
 
@@ -258,6 +259,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form method="POST">
+            <?= csrf_field() ?>
             <div class="input-group">
                 <label>Usuario</label>
                 <div class="input-wrapper">

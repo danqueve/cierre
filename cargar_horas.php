@@ -1,6 +1,6 @@
 <?php
 require 'db.php';
-if (!isset($_SESSION['user_id'])) { header("Location: index.php"); exit; }
+requireAuth();
 
 $mensaje = '';
 $dias = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
@@ -8,6 +8,7 @@ $empleados = ['Alejandro', 'Emilia', 'Luz', 'Maxi'];
 
 // Procesar Guardado
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
     try {
         $pdo->beginTransaction();
         
@@ -75,6 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cargar Horarios</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -173,6 +175,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             padding: 20px; 
             border-radius: 12px; 
             margin-top: 20px;
+        }
+        .form-grid-horas {
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 20px; 
+            align-items: end;
+        }
+        .ajustes-grid {
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 30px;
         }
     </style>
     <script>
@@ -286,7 +299,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     <?php include 'header.php'; ?>
 
-    <div class="container">
+    <div class="container" id="main-content">
         
         <div id="toast-container" class="toast-container"></div>
 
@@ -301,12 +314,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
 
         <form method="POST">
-            
+            <?= csrf_field() ?>
             <!-- 1. Cabecera de Configuración -->
             <div class="card">
                 <div class="card-header">Nueva Liquidación de Jornales</div>
                 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; align-items: end;">
+                <div class="form-grid-horas">
                     <div class="input-group">
                         <label>Empleado</label>
                         <i data-lucide="user" class="input-icon"></i>
@@ -368,7 +381,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="card-header">Ajustes y Liquidación Final</div>
                 
                 <div class="ajustes-section">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+                    <div class="ajustes-grid">
                         
                         <!-- Columna: Sumas (Saldo a Favor) -->
                         <div class="input-group">
@@ -403,7 +416,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <!-- Footer Totales -->
-                <div style="margin-top: 30px; border-top: 1px solid #444; padding-top: 20px; display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
+                <div class="submit-row" style="margin-top: 30px; border-top: 1px solid #444; padding-top: 20px; display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
                     
                     <div style="display: flex; justify-content: space-between; width: 100%; max-width: 400px; color: #888;">
                         <span>Total Horas:</span>

@@ -2,14 +2,12 @@
 require 'db.php';
 
 // Seguridad: Verificar si está logueado y si es ADMIN
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') { 
-    header("Location: dashboard.php"); 
-    exit; 
-}
+requireAdmin();
 
 $mensaje = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf();
     $username = trim($_POST['username']);
     $password = $_POST['password'];
     $rol = $_POST['rol'];
@@ -37,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crear Usuario</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -60,6 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
 
             <form method="POST">
+                <?= csrf_field() ?>
                 <div style="margin-bottom: 15px;">
                     <label style="color: var(--text-muted);">Nombre de Usuario</label>
                     <input type="text" name="username" required placeholder="ej. supervisor_zona1">

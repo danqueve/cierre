@@ -1238,3 +1238,337 @@ tr:hover td {
 .print-only {
     display: none;
 }
+
+/* ===================================================
+   MOBILE NAV — Hamburger + Drawer
+   =================================================== */
+.mobile-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-main);
+    padding: 6px;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+}
+
+.mobile-menu-toggle:hover {
+    background: rgba(255,255,255,0.08);
+}
+
+.mobile-menu-toggle .icon-close {
+    display: none;
+}
+
+.mobile-menu-toggle[aria-expanded="true"] .icon-menu {
+    display: none;
+}
+
+.mobile-menu-toggle[aria-expanded="true"] .icon-close {
+    display: block;
+}
+
+/* Drawer overlay */
+.mobile-nav {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mobile-nav nav {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(300px, 85vw);
+    background: rgba(18,18,22,0.98);
+    border-left: 1px solid rgba(255,255,255,0.08);
+    padding: 80px 20px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    overflow-y: auto;
+}
+
+.mobile-nav.open {
+    opacity: 1;
+}
+
+.mobile-nav.open nav {
+    transform: translateX(0);
+}
+
+.mobile-nav-link {
+    display: block;
+    padding: 14px 16px;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.mobile-nav-link:hover,
+.mobile-nav-link.active {
+    background: rgba(187,154,247,0.12);
+    color: var(--accent-purple);
+}
+
+/* Bloquea scroll del body cuando el nav está abierto */
+body.mobile-nav-open {
+    overflow: hidden;
+}
+
+/* ===================================================
+   RESPONSIVE — 768px (Tablet / Mobile landscape)
+   =================================================== */
+@media (max-width: 768px) {
+
+    /* Mostrar botón hamburguesa */
+    .mobile-menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Mostrar drawer */
+    .mobile-nav {
+        display: block;
+    }
+
+    /* Ocultar nav desktop */
+    .header-nav {
+        display: none;
+    }
+
+    /* Ocultar info usuario en mobile (queda solo el botón logout) */
+    .user-info {
+        display: none;
+    }
+
+    /* Reducir ancho del header glass */
+    .header-glass {
+        padding: 8px 16px;
+    }
+
+    /* Body top padding reducido */
+    body {
+        padding-top: 85px;
+    }
+
+    /* Container sin padding lateral excesivo */
+    .container {
+        padding: 0 0.75rem;
+    }
+
+    /* Stats grid: 1 columna en mobile */
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    /* Grids genéricos de dos columnas → 1 columna */
+    .charts-grid,
+    .kpi-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Tablas: scroll horizontal */
+    .card,
+    .table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        min-width: 600px;
+    }
+
+    /* Inputs full-width */
+    input[type="number"],
+    input[type="text"],
+    input[type="date"],
+    input[type="password"],
+    input[type="time"],
+    select {
+        font-size: 16px; /* Evita zoom en iOS */
+    }
+
+    /* Cards con padding reducido */
+    .card {
+        padding: 1rem;
+        border-radius: 12px;
+    }
+
+    /* KPI cards compactas */
+    .kpi-card {
+        padding: 14px;
+    }
+
+    /* Filter bar apilada */
+    .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 12px;
+    }
+
+    .filter-form {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    /* Segmented control full width */
+    .segmented-control {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Chart container altura reducida */
+    .chart-container {
+        height: 220px;
+    }
+
+    /* Empty state más compacto */
+    .empty-state {
+        padding: 2rem 1rem;
+    }
+
+    /* Badge zona en tabla: texto más pequeño */
+    .badge-zona {
+        font-size: 0.78rem;
+        padding: 3px 8px;
+    }
+
+    /* Headers de sección */
+    .section-header h3 {
+        font-size: 0.85rem;
+    }
+
+    /* Botones de acción apilados */
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+}
+
+/* ===================================================
+   RESPONSIVE — 480px (Mobile portrait)
+   =================================================== */
+@media (max-width: 480px) {
+
+    body {
+        padding-top: 80px;
+    }
+
+    /* Brand text más pequeño */
+    .brand-text {
+        font-size: 1rem;
+    }
+
+    /* Stat number más pequeño */
+    .stat-number {
+        font-size: 1.5rem;
+    }
+
+    /* Título de página */
+    h1 {
+        font-size: 1.4rem;
+    }
+
+    h2 {
+        font-size: 1.2rem;
+    }
+
+    /* Tabla celdas compactas */
+    th, td {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+
+    /* Toast más estrecho */
+    .toast {
+        min-width: calc(100vw - 32px);
+    }
+
+    /* Toast container pegado al borde */
+    .toast-container {
+        right: 8px;
+        left: 8px;
+        top: 12px;
+    }
+
+    /* Filtro fecha full */
+    .filter-form {
+        width: 100%;
+    }
+
+    .filter-form input[type="date"] {
+        flex: 1;
+    }
+
+    /* Botón logout más pequeño */
+    .btn-logout {
+        width: 34px;
+        height: 34px;
+    }
+
+    /* Login container ajustado */
+    .login-container {
+        padding: 20px;
+    }
+}
+
+/* ===================================================
+   ACCESIBILIDAD — Skip link
+   =================================================== */
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 16px;
+    background: var(--accent-purple);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 0 0 8px 8px;
+    font-weight: 600;
+    text-decoration: none;
+    z-index: 9999;
+    transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* ===================================================
+   ACCESIBILIDAD — Reduced Motion
+   =================================================== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .badge-new {
+        animation: none;
+    }
+}

@@ -1,6 +1,6 @@
 <?php
 require 'db.php';
-if (!isset($_SESSION['user_id'])) { header("Location: index.php"); exit; }
+requireAuth();
 
 // --- CONFIGURACIÓN DE FILTROS ---
 $mes_actual = $_GET['mes'] ?? date('m');
@@ -26,6 +26,7 @@ if ($zona_filtro === 'todas') {
             SUM(c.saldo_favor) as total_saldo_favor,
             SUM(d.efectivo) as total_efectivo,
             SUM(d.transferencia) as total_transferencia,
+            SUM((d.efectivo + d.transferencia) * (c.porcentaje_comision / 100)) as total_comision,
             SUM(d.gasto_monto) as total_gastos
         FROM cierres_semanales c
         JOIN detalles_diarios d ON c.id = d.cierre_id
@@ -47,6 +48,7 @@ if ($zona_filtro === 'todas') {
             c.saldo_favor as total_saldo_favor,
             SUM(d.efectivo) as total_efectivo,
             SUM(d.transferencia) as total_transferencia,
+            SUM((d.efectivo + d.transferencia) * (c.porcentaje_comision / 100)) as total_comision,
             SUM(d.gasto_monto) as total_gastos
         FROM cierres_semanales c
         JOIN detalles_diarios d ON c.id = d.cierre_id
@@ -74,7 +76,7 @@ $chart_data = [];
 
 foreach($reporte as $fila) {
     $bruto = $fila['total_efectivo'] + $fila['total_transferencia'];
-    $comision = $bruto * 0.05;
+    $comision = $fila['total_comision'];
     $neto = $bruto - ($comision + $fila['total_saldo_favor']);
     
     // Acumular totales
@@ -95,6 +97,7 @@ foreach($reporte as $fila) {
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reporte Mensual - Moderno</title>
     <link rel="stylesheet" href="style.css?v=<?= time() ?>">
     <!-- Chart.js CDN -->
@@ -136,7 +139,7 @@ foreach($reporte as $fila) {
                 <button type="submit" class="btn btn-primary" style="padding: 8px 15px; font-size: 0.9rem;">Filtrar</button>
             </div>
             
-            <a href="ver_impresion_reporte.php?zona=<?= $zona_filtro ?>&mes=<?= $mes_actual ?>&anio=<?= $anio_actual ?>" 
+            <a href="generar_pdf.php?tipo=mensual&zona=<?= urlencode($zona_filtro) ?>&mes=<?= $mes_actual ?>&anio=<?= $anio_actual ?>" 
                target="_blank" 
                class="btn" 
                style="background: var(--accent-yellow); color: #1e1e1e; font-weight: bold; text-decoration: none; display: flex; align-items: center; padding: 8px 15px;">
@@ -211,7 +214,7 @@ foreach($reporte as $fila) {
                     <tbody>
                         <?php foreach($reporte as $fila): 
                             $bruto = $fila['total_efectivo'] + $fila['total_transferencia'];
-                            $comision = $bruto * 0.05;
+                            $comision = $fila['total_comision'];
                             $neto = $bruto - ($comision + $fila['total_saldo_favor']);
                             $txt = $es_detalle ? date('d/m/Y', strtotime($fila['zona'])) : $fila['zona'];
                         ?>
@@ -229,7 +232,7 @@ foreach($reporte as $fila) {
         </div>
 
         <!-- VISTA DE IMPRESIÓN (OCULTA EN PANTALLA) -->
-        <div class="print-only a4-page">
+        <div class="print-only a4-page" id="main-content">
             <div class="print-header">
                 <h2>Reporte Mensual de Cobranzas</h2>
                 <p>Periodo: <?= $meses[$mes_actual] ?> <?= $anio_actual ?> | Filtro: <?= $titulo_reporte ?></p>
@@ -250,7 +253,7 @@ foreach($reporte as $fila) {
                     <?php if(count($reporte) > 0): ?>
                         <?php foreach($reporte as $fila): 
                             $bruto = $fila['total_efectivo'] + $fila['total_transferencia'];
-                            $comision = $bruto * 0.05;
+                            $comision = $fila['total_comision'];
                             $neto = $bruto - ($comision + $fila['total_saldo_favor']);
                             $titulo = $es_detalle ? date('d/m/Y', strtotime($fila['zona'])) : $fila['zona'];
                         ?>

@@ -6,6 +6,24 @@ $mensaje = '';
 $dias = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
 $zonas = ['Zona 1', 'Zona 2', 'Zona 3', 'Zona 4a6'];
 
+$edit_id = $_GET['id'] ?? null;
+if (!$edit_id) { die("ID inválido"); }
+
+// Fetch actual data
+$stmtD = $pdo->prepare("SELECT * FROM cierres_semanales WHERE id = ?");
+$stmtD->execute([$edit_id]);
+$cEdit = $stmtD->fetch();
+if (!$cEdit) { die("Cierre no encontrado"); }
+
+$stmtDet = $pdo->prepare("SELECT * FROM detalles_diarios WHERE cierre_id = ?");
+$stmtDet->execute([$edit_id]);
+$detRow = $stmtDet->fetchAll(PDO::FETCH_ASSOC);
+
+$dEdit = [];
+foreach($detRow as $r) {
+    $dEdit[$r['dia_semana']] = $r;
+}
+
 // Procesar Guardado
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf();
@@ -79,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cargar Cierre Semanal</title>
+    <title>Editar Cierre Semanal</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="main.js" defer></script>
@@ -310,6 +328,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             document.querySelector('input[name="fecha_inicio"]').addEventListener('change', actualizarFechaDia);
             document.querySelector('select[name="dia_seleccionado"]').addEventListener('change', actualizarFechaDia);
             if (typeof lucide !== 'undefined') lucide.createIcons();
+            calcularTotales();
         };
     </script>
 </head>
@@ -330,7 +349,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </script>
         <?php endif; ?>
 
-        <form method="POST">
+        <form method="POST" action="editar_cierre.php?id=<?= $edit_id ?>">
             <?= csrf_field() ?>
             <div class="card">
 
@@ -340,8 +359,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <i data-lucide="clipboard-list"></i>
                     </div>
                     <div>
-                        <h2>Carga de Cobranzas</h2>
-                        <p>Registrá los montos cobrados por zona y semana</p>
+                        <h2>Editar Cobranzas</h2>
+                        <p>Modificá los montos cobrados por zona y semana</p>
                     </div>
                 </div>
 
@@ -352,7 +371,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <i data-lucide="map-pin" class="input-icon"></i>
                         <select name="zona" required class="input-with-icon">
                             <?php foreach($zonas as $z): ?>
-                                <option value="<?= $z ?>"><?= $z ?></option>
+                                <option value="<?= $z ?>" <?= $cEdit["zona"] === $z ? "selected" : "" ?>><?= $z ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -360,7 +379,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <label>Inicio de Semana (Lunes)</label>
                         <i data-lucide="calendar" class="input-icon"></i>
                         <input type="date" name="fecha_inicio" required
-                               value="<?= date('Y-m-d', strtotime('monday this week')) ?>"
+                               value="<?= $cEdit['fecha_inicio'] ?>" readonly style="background: rgba(255,255,255,0.05); color: #888; border-color: transparent;"
                                class="input-with-icon">
                     </div>
                 </div>
@@ -399,7 +418,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <div class="input-group" style="margin-bottom:0;">
                                             <i data-lucide="banknote" class="input-icon" style="width:15px;"></i>
                                             <input type="number" step="0.01"
-                                                   name="data[<?= $dia ?>][efectivo]"
+                                                   name="data[<?= $dia ?>][efectivo]" value="<?= htmlspecialchars($dEdit[$dia]["efectivo"] ?? "") ?>" 
                                                    class="calculable input-with-icon"
                                                    oninput="calcularTotales()" placeholder="0">
                                         </div>
@@ -408,7 +427,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <div class="input-group" style="margin-bottom:0;">
                                             <i data-lucide="credit-card" class="input-icon" style="width:15px;"></i>
                                             <input type="number" step="0.01"
-                                                   name="data[<?= $dia ?>][transferencia]"
+                                                   name="data[<?= $dia ?>][transferencia]" value="<?= htmlspecialchars($dEdit[$dia]["transferencia"] ?? "") ?>" 
                                                    class="calculable input-with-icon"
                                                    oninput="calcularTotales()" placeholder="0">
                                         </div>
@@ -417,7 +436,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <div class="input-group" style="margin-bottom:0;">
                                             <i data-lucide="trending-down" class="input-icon" style="width:15px; color:var(--accent-red);"></i>
                                             <input type="number" step="0.01"
-                                                   name="data[<?= $dia ?>][gasto_monto]"
+                                                   name="data[<?= $dia ?>][gasto_monto]" value="<?= htmlspecialchars($dEdit[$dia]["gasto_monto"] ?? "") ?>" 
                                                    class="calculable input-with-icon"
                                                    oninput="calcularTotales()"
                                                    style="color:var(--accent-red); border-bottom-color:rgba(247,118,142,0.35);"
@@ -428,7 +447,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <div class="input-group" style="margin-bottom:0;">
                                             <i data-lucide="tag" class="input-icon" style="width:15px;"></i>
                                             <input type="text"
-                                                   name="data[<?= $dia ?>][gasto_concepto]"
+                                                   name="data[<?= $dia ?>][gasto_concepto]" value="<?= htmlspecialchars($dEdit[$dia]["gasto_concepto"] ?? "") ?>" 
                                                    class="input-with-icon" placeholder="Detalle…">
                                         </div>
                                     </td>
@@ -507,14 +526,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="input-group" style="margin-bottom:12px;">
                             <label>Monto</label>
                             <i data-lucide="dollar-sign" class="input-icon" style="color:var(--accent-green);"></i>
-                            <input type="number" step="0.01" name="saldo_favor"
+                            <input type="number" step="0.01" name="saldo_favor" value="<?= htmlspecialchars($cEdit["saldo_favor"]) ?>" 
                                    placeholder="0.00" class="input-with-icon"
                                    style="border-bottom-color:rgba(158,206,106,0.4);">
                         </div>
                         <div class="input-group" style="margin-bottom:0;">
                             <label>Concepto</label>
                             <i data-lucide="tag" class="input-icon"></i>
-                            <input type="text" name="saldo_concepto" class="input-with-icon"
+                            <input type="text" name="saldo_concepto" class="input-with-icon" value="<?= htmlspecialchars($cEdit["saldo_concepto"]) ?>" 
                                    placeholder="Ej. Bono por objetivos">
                         </div>
                     </div>
@@ -527,14 +546,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="input-group" style="margin-bottom:12px;">
                             <label>Monto</label>
                             <i data-lucide="dollar-sign" class="input-icon" style="color:var(--accent-red);"></i>
-                            <input type="number" step="0.01" name="descuento_creditos"
+                            <input type="number" step="0.01" name="descuento_creditos" value="<?= htmlspecialchars($cEdit["descuento_creditos"]) ?>" 
                                    placeholder="0.00" class="input-with-icon"
                                    style="border-bottom-color:rgba(247,118,142,0.4); color:var(--accent-red);">
                         </div>
                         <div class="input-group" style="margin-bottom:0;">
                             <label>Concepto</label>
                             <i data-lucide="tag" class="input-icon"></i>
-                            <input type="text" name="descuento_creditos_concepto" class="input-with-icon"
+                            <input type="text" name="descuento_creditos_concepto" class="input-with-icon" value="<?= htmlspecialchars($cEdit["descuento_creditos_concepto"] ?? "") ?>" 
                                    placeholder="Ej. Cuota 1/3 Préstamo">
                         </div>
                     </div>
@@ -548,7 +567,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <label>Porcentaje</label>
                             <i data-lucide="settings" class="input-icon" style="color:var(--accent-blue);"></i>
                             <input type="number" step="0.5" name="porcentaje_comision"
-                                   value="6.0" class="input-with-icon"
+                                   value="<?= htmlspecialchars($cEdit["porcentaje_comision"]) ?>" class="input-with-icon"
                                    style="border-bottom-color:rgba(122,162,247,0.4);">
                         </div>
                     </div>

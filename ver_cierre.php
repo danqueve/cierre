@@ -1,8 +1,8 @@
 <?php
 require 'db.php';
-if (!isset($_SESSION['user_id'])) { header("Location: index.php"); exit; }
+requireAuth();
 
-$id = $_GET['id'] ?? 0;
+$id = (int)($_GET['id'] ?? 0);
 
 // Si no se pasa un ID, buscamos el último cierre cargado
 if ($id == 0) {
@@ -49,7 +49,7 @@ foreach($detalles as $d) {
 }
 
 $totalCobrado = $totalEf + $totalTr;
-$comision = $totalCobrado * 0.05; 
+$comision = $totalCobrado * ($cierre['porcentaje_comision'] / 100);
 $saldoFavor = $cierre['saldo_favor'];
 $descuentoCreditos = $cierre['descuento_creditos'] ?? 0;
 
@@ -60,6 +60,7 @@ $netoRendir = $totalCobrado - ($comision + $saldoFavor) + $descuentoCreditos;
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Liquidación - <?= htmlspecialchars($cierre['zona']) ?></title>
     <link rel="stylesheet" href="style.css?v=<?= time() ?>">
     <style>
@@ -80,7 +81,7 @@ $netoRendir = $totalCobrado - ($comision + $saldoFavor) + $descuentoCreditos;
         .a4-page {
             width: 210mm;
             min-height: 297mm;
-            padding: 20mm;
+            padding: 15mm 20mm;
             margin: 0 auto;
             background: white;
             box-shadow: 0 0 15px rgba(0,0,0,0.3);
@@ -216,14 +217,55 @@ $netoRendir = $totalCobrado - ($comision + $saldoFavor) + $descuentoCreditos;
 
         /* --- ESTILOS DE IMPRESIÓN --- */
         @media print {
-            body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            @page {
+                size: A4 portrait;
+                margin: 12mm 15mm;
+            }
+
+            body, html {
+                background: white !important;
+                color: #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* Anular cualquier estilo oscuro heredado del CSS global */
+            *, *::before, *::after {
+                background-color: transparent !important;
+                color: #000 !important;
+                box-shadow: none !important;
+                text-shadow: none !important;
+            }
+
             .preview-container { display: block !important; padding: 0 !important; }
-            .a4-page { box-shadow: none !important; border: none !important; width: 100% !important; margin: 0 !important; padding: 10mm !important; }
+            .a4-page { box-shadow: none !important; border: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; background: white !important; }
             .no-print { display: none !important; }
-            
-            .main-table th { background-color: #e0e0e0 !important; border: 1px solid #000 !important; }
-            .main-table td { border: 1px solid #000 !important; }
-            .liq-box { border: 1px solid #000 !important; }
+
+            /* Cabecera */
+            .doc-header h2 { color: #066bcf !important; }
+            .doc-info { background-color: #f8f9fa !important; }
+
+            /* Tabla */
+            .main-table { background-color: #fff !important; }
+            .main-table th { background-color: #e0e0e0 !important; color: #000 !important; border: 1px solid #000 !important; }
+            .main-table td { background-color: #fff !important; color: #000 !important; border: 1px solid #000 !important; }
+            .main-table tr:nth-child(even) td { background-color: #f9f9f9 !important; }
+            .main-table tfoot td { background-color: #eeeeee !important; color: #000 !important; border-top: 2px solid #000 !important; }
+
+            /* Cajas de liquidación */
+            .liq-box { border: 1px solid #000 !important; background: #fff !important; }
+            .box-cobrador .liq-title { background-color: #6c757d !important; color: #fff !important; }
+            .box-empresa .liq-title { background-color: #2c3e50 !important; color: #fff !important; }
+            .liq-content { background: #fff !important; }
+            .liq-row { color: #000 !important; border-bottom: 1px dashed #ccc !important; }
+            .liq-total { background-color: #f8f9fa !important; color: #000 !important; border-top: 2px solid #333 !important; }
+
+            /* Evitar cortes dentro de filas y secciones */
+            .main-table tr { page-break-inside: avoid; }
+            .liquidation-section { page-break-inside: avoid; }
+
+            /* Ocultar URLs impresas por el navegador */
+            a[href]:after { content: none !important; }
         }
     </style>
 </head>
@@ -234,12 +276,12 @@ $netoRendir = $totalCobrado - ($comision + $saldoFavor) + $descuentoCreditos;
         <button onclick="window.close()" style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
             Cerrar Pestaña
         </button>
-        <button onclick="window.print()" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-left: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
-            Imprimir
-        </button>
+        <a href="generar_pdf.php?tipo=cierre&id=<?= $id ?>" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-left: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); text-decoration: none; display: inline-block;">
+            Descargar PDF
+        </a>
     </div>
 
-    <div class="preview-container">
+    <div class="preview-container" id="main-content">
         <div class="a4-page">
             
             <div class="doc-header">
@@ -274,7 +316,7 @@ $netoRendir = $totalCobrado - ($comision + $saldoFavor) + $descuentoCreditos;
                         <td style="text-align: right;"><?= formatCurrency($d['efectivo']) ?></td>
                         <td style="text-align: right;"><?= formatCurrency($d['transferencia']) ?></td>
                         <td style="text-align: right; font-weight: bold;"><?= formatCurrency($sub) ?></td>
-                        <td style="text-align: right;"><?= $d['gasto_monto'] > 0 ? formatCurrency($d['gasto_monto']) : '-' ?></td>
+                        <td style="text-align: right;"><?= ($d['gasto_monto'] > 0) ? formatCurrency($d['gasto_monto']) : '<span style="color: #aaa;">-</span>' ?></td>
                         <td style="font-style: italic; font-size: 9pt;"><?= htmlspecialchars($d['gasto_concepto']) ?></td>
                     </tr>
                     <?php endforeach; ?>
@@ -299,7 +341,7 @@ $netoRendir = $totalCobrado - ($comision + $saldoFavor) + $descuentoCreditos;
                     <div class="liq-title">Liquidación Cobrador</div>
                     <div class="liq-content">
                         <div class="liq-row">
-                            <span>(+) Comisión (5%):</span>
+                            <span>(+) Comisión (<?= floatval($cierre['porcentaje_comision']) ?>%):</span>
                             <span><?= formatCurrency($comision) ?></span>
                         </div>
                         <div class="liq-row">
@@ -343,7 +385,7 @@ $netoRendir = $totalCobrado - ($comision + $saldoFavor) + $descuentoCreditos;
                             <strong><?= formatCurrency($totalCobrado) ?></strong>
                         </div>
                         <div class="liq-row">
-                            <span>(-) Comisión (5%):</span>
+                            <span>(-) Comisión (<?= floatval($cierre['porcentaje_comision']) ?>%):</span>
                             <span>- <?= formatCurrency($comision) ?></span>
                         </div>
                         <div class="liq-row">
@@ -375,6 +417,15 @@ $netoRendir = $totalCobrado - ($comision + $saldoFavor) + $descuentoCreditos;
 
         </div>
     </div>
+
+<script>
+    function printAndClose() {
+        window.onafterprint = function() {
+            window.close();
+        };
+        window.print();
+    }
+</script>
 
 </body>
 </html>

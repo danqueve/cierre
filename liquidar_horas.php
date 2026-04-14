@@ -1,6 +1,6 @@
 <?php
 require 'db.php';
-if (!isset($_SESSION['user_id'])) { header("Location: index.php"); exit; }
+requireAuth();
 
 $id = $_GET['id'] ?? 0;
 
@@ -62,7 +62,8 @@ $totalPagar = $subtotalHoras + $saldoFavor - $descuento;
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Liquidación Horas - <?= $cierre['zona'] ?></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liquidación Horas - <?= h($cierre['zona']) ?></title>
     <link rel="stylesheet" href="style.css">
     <style>
         /* Estilos específicos de la página (Mínimos, delegando a style.css) */

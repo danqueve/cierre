@@ -1,6 +1,6 @@
 <?php
 require 'db.php';
-if (!isset($_SESSION['user_id'])) { header("Location: index.php"); exit; }
+requireAuth();
 
 // --- CONSULTA HISTORIAL DE HORAS ---
 // Buscamos cierres que tengan valor de hora configurado, lo que indica que son liquidaciones de jornales.
@@ -29,6 +29,7 @@ $historial = $stmt->fetchAll();
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Historial de Horas</title>
     <link rel="stylesheet" href="style.css">
     <style>
@@ -40,7 +41,15 @@ $historial = $stmt->fetchAll();
             border-radius: 4px;
             font-size: 0.85em;
             font-weight: bold;
+            font-weight: bold;
             background-color: rgba(255,255,255,0.1);
+        }
+        .btn-receipt {
+            background-color: #333; 
+            border: 1px solid #555; 
+            padding: 6px 12px; 
+            font-size: 0.85rem; 
+            color: #ccc;
         }
     </style>
 </head>
@@ -48,7 +57,7 @@ $historial = $stmt->fetchAll();
     
     <?php include 'header.php'; ?>
 
-    <div class="container">
+    <div class="container" id="main-content">
         
         <div class="card" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <div>
@@ -104,7 +113,7 @@ $historial = $stmt->fetchAll();
                             <?= formatCurrency($totalPagar) ?>
                         </td>
                         <td>
-                            <a href="liquidar_horas.php?id=<?= $h['id'] ?>" target="_blank" class="btn" style="background-color: #333; border: 1px solid #555; padding: 6px 12px; font-size: 0.85rem; color: #ccc;">
+                            <a href="liquidar_horas.php?id=<?= $h['id'] ?>" target="_blank" class="btn btn-receipt" aria-label="Ver recibo de <?= htmlspecialchars($h['zona']) ?>">
                                 Ver Recibo
                             </a>
                         </td>
