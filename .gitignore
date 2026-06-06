@@ -1,0 +1,20 @@
+# Archivos sensibles
+.env
+*.sql
+
+# Archivos de desarrollo/test
+test_*.html
+debug_*.php
+migrate_password.php
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Skills
+skills-lock.json
+.agents/

@@ -3,6 +3,7 @@ require 'db.php';
 if (!isset($_SESSION['user_id'])) { header("Location: index.php"); exit; }
 
 $id = $_GET['id'] ?? 0;
+$autoExport = isset($_GET['export']) && $_GET['export'] === '1';
 
 // Obtener datos de la cabecera
 $stmt = $pdo->prepare("SELECT * FROM cierres_semanales WHERE id = ?");
@@ -16,29 +17,13 @@ $stmtDet = $pdo->prepare("SELECT * FROM detalles_diarios WHERE cierre_id = ? ORD
 $stmtDet->execute([$id]);
 $detalles = $stmtDet->fetchAll();
 
-// --- CÁLCULOS GLOBALES Y VERIFICACIÓN DE TURNO TARDE ---
+// --- CÁLCULOS GLOBALES ---
 $totalMinutos = 0;
-$hayTurnoTarde = false; // Bandera para controlar la visualización
 
 foreach($detalles as $d) {
-    // Verificar si hay datos en turno tarde en algún día
-    if (!empty($d['hora_entrada_tarde']) || !empty($d['hora_salida_tarde'])) {
-        $hayTurnoTarde = true;
-    }
-
-    // Calcular Turno Mañana
     if($d['hora_entrada'] && $d['hora_salida']) {
         $start = strtotime($d['hora_entrada']);
         $end = strtotime($d['hora_salida']);
-        $diff = ($end - $start) / 60; // Diferencia en minutos
-        if($diff < 0) $diff += 24 * 60; // Ajuste si cruza medianoche
-        $totalMinutos += $diff;
-    }
-    
-    // Calcular Turno Tarde
-    if(!empty($d['hora_entrada_tarde']) && !empty($d['hora_salida_tarde'])) {
-        $start = strtotime($d['hora_entrada_tarde']);
-        $end = strtotime($d['hora_salida_tarde']);
         $diff = ($end - $start) / 60;
         if($diff < 0) $diff += 24 * 60;
         $totalMinutos += $diff;
@@ -62,83 +47,192 @@ $totalPagar = $subtotalHoras + $saldoFavor - $descuento;
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="img/logo.png">
     <title>Liquidación Horas - <?= $cierre['zona'] ?></title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Estilos A4 Exclusivos - Minimalista B&N */
-        html, body { background-color: #525659; min-height: 100%; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; }
-        .preview-container { display: flex; justify-content: center; padding: 40px 0; }
-        
-        /* Hoja A4 */
+        body { background-color: #525659; }
+        .preview-container { display: flex; justify-content: center; padding: 40px 0; min-height: 100vh; }
+
         .a4-page {
-            width: 210mm; min-height: 297mm; padding: 20mm; background: white; 
-            color: black; position: relative; box-shadow: 0 0 15px rgba(0,0,0,0.3);
-            box-sizing: border-box;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 0 auto;
+            background: #fff;
+            box-shadow: 0 0 15px rgba(0,0,0,0.4);
+            color: #000;
+            position: relative;
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
         }
 
-        /* Encabezado */
-        .doc-header { text-align: center; border-bottom: 2px solid black; padding-bottom: 15px; margin-bottom: 25px; }
-        .doc-header h2 { margin: 0; text-transform: uppercase; font-size: 18pt; font-weight: bold; }
-        .doc-header h4 { margin: 5px 0; color: black; font-weight: normal; font-size: 12pt; }
-
-        /* Información Principal */
-        .info-box { 
-            display: flex; justify-content: space-between; 
-            margin-bottom: 30px; font-size: 11pt; border-bottom: 1px solid #ccc; padding-bottom: 15px;
+        /* Encabezado del documento */
+        .doc-header {
+            text-align: center;
+            border-bottom: 3px solid #1a1a2e;
+            padding-bottom: 14px;
+            margin-bottom: 22px;
         }
-        .info-item strong { font-weight: bold; }
-
-        /* Tabla de Horarios */
-        .hours-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 10pt; }
-        
-        .hours-table th { 
-            background-color: #f8f5f5; /* Gris Claro */
-            color: black; 
-            padding: 8px; 
-            text-transform: uppercase; 
-            border: 1px solid black; 
-            vertical-align: middle;
+        .doc-header h2 {
+            margin: 0;
+            text-transform: uppercase;
+            font-size: 18pt;
             font-weight: bold;
+            color: #1a1a2e;
+            letter-spacing: 1px;
         }
-        
-        .hours-table td { 
-            border: 1px solid black; 
-            padding: 8px; 
-            text-align: center; 
-            color: black;
+        .doc-header h4 {
+            margin: 4px 0 0;
+            color: #444;
+            font-weight: normal;
+            font-size: 11pt;
         }
-        
-        .hours-table tr:nth-child(even) { background-color: #f9f9f9; }
-        .th-group { background-color: #d0d0d0 !important; font-size: 9pt; }
 
-        /* Caja de Totales - Estilo Recibo Detallado */
-        .total-box { 
-            float: right; width: 45%; border: 2px solid black; padding: 15px; margin-top: 10px;
+        /* Info box (empleado, semana, fecha) */
+        .a4-page .info-box {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background: #f0f4ff;
+            border: 1px solid #c0cce8;
+            border-radius: 6px;
         }
-        .total-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 11pt; }
-        .sub-detail { font-size: 9pt; color: #444; font-style: italic; margin-top: -5px; margin-bottom: 8px; text-align: right; }
-        
-        .grand-total { border-top: 2px solid black; padding-top: 10px; font-weight: bold; font-size: 14pt; margin-top: 10px; background-color: #f0f0f0; padding: 10px; }
+        .a4-page .info-item {
+            font-size: 10pt;
+            color: #222;
+        }
+        .a4-page .info-item strong {
+            color: #1a1a2e;
+        }
+
+        /* Tabla de horas */
+        .a4-page .hours-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 22px;
+        }
+        .a4-page .hours-table th {
+            background: #1a1a2e;
+            color: #fff;
+            padding: 8px 10px;
+            text-align: center;
+            font-size: 10pt;
+            border: 1px solid #1a1a2e;
+        }
+        .a4-page .hours-table .th-group {
+            background: #2d3561;
+            color: #fff;
+            font-size: 9pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .a4-page .hours-table td {
+            padding: 7px 10px;
+            border: 1px solid #ccc;
+            text-align: center;
+            font-size: 10pt;
+            color: #000;
+            background: #fff;
+        }
+        .a4-page .hours-table tbody tr:nth-child(even) td {
+            background: #f7f8fc;
+        }
+        .a4-page .hours-table tbody tr:hover td {
+            background: #eef1fb;
+        }
+
+        /* Caja de totales */
+        .a4-page .total-box {
+            margin-top: 18px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 14px 18px;
+            background: #fafafa;
+            max-width: 380px;
+            margin-left: auto;
+        }
+        .a4-page .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            color: #222;
+            font-size: 10pt;
+            border-bottom: 1px solid #eee;
+        }
+        .a4-page .total-row:last-child { border-bottom: none; }
+        .a4-page .total-row strong { color: #000; }
+        .a4-page .grand-total {
+            font-size: 13pt;
+            font-weight: bold;
+            border-top: 2px solid #1a1a2e !important;
+            margin-top: 8px;
+            padding-top: 10px;
+            color: #1a1a2e;
+            border-bottom: none !important;
+        }
+        .a4-page .sub-detail {
+            font-size: 8.5pt;
+            color: #555;
+            font-style: italic;
+            padding-left: 8px;
+            margin-top: -2px;
+        }
 
         /* Firmas */
-        .firma-box { margin-top: 80px; display: flex; justify-content: space-around; text-align: center; clear: both; }
-        .firma-line { border-top: 1px solid black; width: 200px; margin-top: 60px; font-size: 10pt; }
+        .a4-page .firma-box {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 50px;
+        }
+        .a4-page .firma-line {
+            border-top: 1.5px solid #333;
+            padding-top: 8px;
+            text-align: center;
+            width: 160px;
+            color: #222;
+            font-size: 9pt;
+            font-weight: bold;
+        }
 
-        /* Ajustes de Impresión */
         @media print {
-            body { background: white; margin: 0; }
-            .preview-container { padding: 0; }
-            .a4-page { box-shadow: none; margin: 0; width: 100%; }
+            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            body { background: #fff; }
             .no-print { display: none !important; }
-            .hours-table th, .grand-total { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .preview-container { display: block; padding: 0; }
+            .a4-page { box-shadow: none; margin: 0; width: 100%; min-height: 100%; }
         }
     </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        window.addEventListener('load', function() {
+            lucide.createIcons();
+            <?php if($autoExport): ?>
+            const element = document.querySelector('.a4-page');
+            const nombre = '<?= addslashes($cierre['zona']) ?>';
+            const fecha  = '<?= date('d-m-Y', strtotime($cierre['fecha_inicio'])) ?>';
+            const opt = {
+                margin:     0,
+                filename:   'Liquidacion-' + nombre + '-' + fecha + '.pdf',
+                image:      { type: 'jpeg', quality: 0.98 },
+                html2canvas:{ scale: 2, useCORS: true, letterRendering: true },
+                jsPDF:      { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+            <?php endif; ?>
+        });
+    </script>
 </head>
 <body>
 
     <div class="no-print" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
-        <a href="cargar_horas.php" class="btn" style="background: #333; color: white; margin-right: 10px; border: 1px solid #fff;">&larr; Volver</a>
-        <button onclick="window.print()" class="btn" style="background: white; color: black; font-weight: bold; border: 2px solid black;">Imprimir Liquidación</button>
+        <a href="cargar_horas.php" class="btn" style="background: white; color: var(--text-main); margin-right: 10px; border: 1px solid var(--border-color); box-shadow:0 2px 8px rgba(0,0,0,0.08);">&larr; Volver</a>
+        <button onclick="window.print()" class="btn" style="background: var(--accent-purple); color: white; font-weight: bold; border: none; box-shadow:0 4px 12px rgba(124,58,237,0.3);">
+            Imprimir <i data-lucide="printer" style="width:16px; height:16px; vertical-align:middle;"></i>
+        </button>
     </div>
 
     <div class="preview-container">
@@ -159,36 +253,20 @@ $totalPagar = $subtotalHoras + $saldoFavor - $descuento;
                 <thead>
                     <tr>
                         <th rowspan="2" style="width: 15%;">Día</th>
-                        <th colspan="2" class="th-group">Turno Mañana</th>
-                        <?php if($hayTurnoTarde): ?>
-                            <th colspan="2" class="th-group">Turno Tarde</th>
-                        <?php endif; ?>
+                        <th colspan="2" class="th-group">Horario</th>
                         <th rowspan="2" style="width: 15%;">Total Horas</th>
                     </tr>
                     <tr>
                         <th style="width: 15%;">Entrada</th>
                         <th style="width: 15%;">Salida</th>
-                        <?php if($hayTurnoTarde): ?>
-                            <th style="width: 15%;">Entrada</th>
-                            <th style="width: 15%;">Salida</th>
-                        <?php endif; ?>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach($detalles as $d): 
                         $minutosDia = 0;
-                        // Turno 1
                         if($d['hora_entrada'] && $d['hora_salida']) {
                             $start = strtotime($d['hora_entrada']);
                             $end = strtotime($d['hora_salida']);
-                            $diff = ($end - $start) / 60;
-                            if($diff < 0) $diff += 24 * 60;
-                            $minutosDia += $diff;
-                        }
-                        // Turno 2
-                        if(!empty($d['hora_entrada_tarde']) && !empty($d['hora_salida_tarde'])) {
-                            $start = strtotime($d['hora_entrada_tarde']);
-                            $end = strtotime($d['hora_salida_tarde']);
                             $diff = ($end - $start) / 60;
                             if($diff < 0) $diff += 24 * 60;
                             $minutosDia += $diff;
@@ -205,11 +283,7 @@ $totalPagar = $subtotalHoras + $saldoFavor - $descuento;
                         <td style="font-weight: bold; text-align: left; padding-left: 15px;"><?= $d['dia_semana'] ?></td>
                         <td><?= $d['hora_entrada'] ? date('H:i', strtotime($d['hora_entrada'])) : '-' ?></td>
                         <td><?= $d['hora_salida'] ? date('H:i', strtotime($d['hora_salida'])) : '-' ?></td>
-                        <?php if($hayTurnoTarde): ?>
-                            <td><?= !empty($d['hora_entrada_tarde']) ? date('H:i', strtotime($d['hora_entrada_tarde'])) : '-' ?></td>
-                            <td><?= !empty($d['hora_salida_tarde']) ? date('H:i', strtotime($d['hora_salida_tarde'])) : '-' ?></td>
-                        <?php endif; ?>
-                        <td style="font-weight: bold; background-color: #e8e8e8;"><?= $horasStr ?></td>
+                        <td style="font-weight: bold; background-color: #dde3f5; color: #1a1a2e;"><?= $horasStr ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>

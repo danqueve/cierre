@@ -10,6 +10,7 @@ if (isset($_SESSION['user_id'])) {
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_verify();
     $username = trim($_POST['username']);
     $password = $_POST['password'];
 
@@ -17,7 +18,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute([$username]);
     $user = $stmt->fetch();
 
-    if ($user && password_verify($password, $user['password'])) {
+    $authenticated = false;
+    if ($user) {
+        // Soporte bcrypt (password_verify)
+        if (password_verify($password, $user['password'])) {
+            $authenticated = true;
+        }
+        // Auto-migración de hash MD5 legacy a bcrypt
+        elseif (strlen($user['password']) === 32 && md5($password) === $user['password']) {
+            $authenticated = true;
+            $newHash = password_hash($password, PASSWORD_DEFAULT);
+            $pdo->prepare("UPDATE usuarios SET password = ? WHERE id = ?")->execute([$newHash, $user['id']]);
+        }
+    }
+
+    if ($authenticated) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['role'] = $user['rol'];
@@ -33,7 +48,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Cierres Semanales</title>
+    <title>Login - Imperio Cierres</title>
+    <link rel="icon" type="image/png" href="img/logo.png">
     <!-- Usamos la misma fuente del sistema -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -228,7 +244,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 0.8rem;
             color: #64748b;
         }
+        }
     </style>
+    <script src="main.js" defer></script>
 </head>
 <body>
 
@@ -245,13 +263,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h1>Bienvenido</h1>
         <p>Sistema de Gestión de Cierres</p>
 
+        <div id="toast-container" class="toast-container"></div>
+
         <?php if($error): ?>
-            <div class="alert">
-                <?= htmlspecialchars($error) ?>
-            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    showToast("<?= addslashes($error) ?>", 'error');
+                });
+            </script>
         <?php endif; ?>
 
         <form method="POST">
+            <?= csrf_field() ?>
             <div class="input-group">
                 <label>Usuario</label>
                 <div class="input-wrapper">

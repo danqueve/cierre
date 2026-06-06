@@ -12,8 +12,7 @@ $sql = "
         c.fecha_inicio, 
         c.valor_hora,
         SUM(
-            (IFNULL(TIME_TO_SEC(TIMEDIFF(d.hora_salida, d.hora_entrada)), 0) + 
-             IFNULL(TIME_TO_SEC(TIMEDIFF(d.hora_salida_tarde, d.hora_entrada_tarde)), 0)) / 3600
+            IFNULL(TIME_TO_SEC(TIMEDIFF(d.hora_salida, d.hora_entrada)), 0) / 3600
         ) as total_horas_decimal
     FROM cierres_semanales c
     LEFT JOIN detalles_diarios d ON c.id = d.cierre_id
@@ -40,7 +39,8 @@ $historial = $stmt->fetchAll();
             border-radius: 4px;
             font-size: 0.85em;
             font-weight: bold;
-            background-color: rgba(255,255,255,0.1);
+            background-color: var(--tint-purple);
+            color: var(--accent-purple);
         }
     </style>
 </head>
@@ -103,8 +103,11 @@ $historial = $stmt->fetchAll();
                         <td style="font-weight: bold; color: var(--accent-green); font-size: 1.1em;">
                             <?= formatCurrency($totalPagar) ?>
                         </td>
-                        <td>
-                            <a href="liquidar_horas.php?id=<?= $h['id'] ?>" target="_blank" class="btn" style="background-color: #333; border: 1px solid #555; padding: 6px 12px; font-size: 0.85rem; color: #ccc;">
+                        <td style="display: flex; gap: 6px; justify-content: center;">
+                            <a href="cargar_horas.php?id=<?= $h['id'] ?>" class="btn" style="background-color: var(--tint-blue); border: 1px solid rgba(37,99,235,0.2); padding: 6px 12px; font-size: 0.85rem; color: var(--accent-blue);">
+                                Editar
+                            </a>
+                            <a href="liquidar_horas.php?id=<?= $h['id'] ?>&export=1" target="_blank" class="btn" style="background-color: var(--tint-purple); border: 1px solid rgba(124,58,237,0.2); padding: 6px 12px; font-size: 0.85rem; color: var(--accent-purple);">
                                 Ver Recibo
                             </a>
                         </td>
