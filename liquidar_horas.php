@@ -58,6 +58,7 @@ $totalPagar = $subtotalHoras + $saldoFavor - $descuento;
             width: 210mm;
             min-height: 297mm;
             padding: 20mm;
+            box-sizing: border-box;
             margin: 0 auto;
             background: #fff;
             box-shadow: 0 0 15px rgba(0,0,0,0.4);
@@ -197,12 +198,17 @@ $totalPagar = $subtotalHoras + $saldoFavor - $descuento;
             font-weight: bold;
         }
 
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
         @media print {
             * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            body { background: #fff; }
+            html, body { background: #fff !important; margin: 0; padding: 0; }
             .no-print { display: none !important; }
-            .preview-container { display: block; padding: 0; }
-            .a4-page { box-shadow: none; margin: 0; width: 100%; min-height: 100%; }
+            .preview-container { display: block; padding: 0; margin: 0; }
+            .a4-page { box-shadow: none; margin: 0; }
         }
     </style>
     <script src="https://unpkg.com/lucide@latest"></script>
