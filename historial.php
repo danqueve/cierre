@@ -1,5 +1,5 @@
 <?php
-require 'db.php';
+require __DIR__ . '/includes/db.php';
 if (!isset($_SESSION['user_id'])) { header("Location: index.php"); exit; }
 
 // FILTRO: Excluir empleados administrativos
@@ -35,7 +35,7 @@ $promedio       = $total_cierres > 0 ? $gran_total / $total_cierres : 0;
 <head>
     <meta charset="UTF-8">
     <title>Historial de Cierres</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/css/style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         /* ===== KPI STRIP ===== */
@@ -232,7 +232,7 @@ $promedio       = $total_cierres > 0 ? $gran_total / $total_cierres : 0;
     </style>
 </head>
 <body>
-    <?php include 'header.php'; ?>
+    <?php include __DIR__ . '/includes/header.php'; ?>
 
     <!-- Modal de Confirmación de Eliminación -->
     <div class="modal-overlay" id="deleteModal">

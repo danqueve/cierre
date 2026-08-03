@@ -1,5 +1,5 @@
 <?php
-require 'db.php';
+require __DIR__ . '/includes/db.php';
 
 // Solo administradores pueden eliminar
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {

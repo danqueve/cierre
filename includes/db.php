@@ -10,7 +10,7 @@ if (session_status() === PHP_SESSION_NONE) {
 // ═══════════════════════════════════════════════════════
 //  CARGA DE CONFIGURACIÓN DESDE .env
 // ═══════════════════════════════════════════════════════
-$envFile = __DIR__ . '/.env';
+$envFile = __DIR__ . '/../.env';
 if (file_exists($envFile)) {
     $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {

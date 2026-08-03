@@ -1,5 +1,5 @@
 <?php
-require 'db.php';
+require __DIR__ . '/includes/db.php';
 
 // Si ya está logueado, redirigir al dashboard
 if (isset($_SESSION['user_id'])) {
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Imperio Cierres</title>
-    <link rel="icon" type="image/png" href="img/logo.png">
+    <link rel="icon" type="image/png" href="assets/img/logo.png">
     <!-- Usamos la misma fuente del sistema -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -246,7 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         }
     </style>
-    <script src="main.js" defer></script>
+    <script src="assets/js/main.js" defer></script>
 </head>
 <body>
 

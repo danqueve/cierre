@@ -1,5 +1,5 @@
 <?php
-require 'db.php';
+require __DIR__ . '/includes/db.php';
 if (!isset($_SESSION['user_id'])) { header("Location: index.php"); exit; }
 
 $mensaje = '';
@@ -78,9 +78,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Cargar Cierre Semanal</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/css/style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="main.js" defer></script>
+    <script src="assets/js/main.js" defer></script>
     <style>
         /* ===== ENCABEZADO DE PÁGINA ===== */
         .page-header {
@@ -312,7 +312,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body class="fade-in">
 
-    <?php include 'header.php'; ?>
+    <?php include __DIR__ . '/includes/header.php'; ?>
 
     <div class="container">
         <div id="toast-container" class="toast-container"></div>

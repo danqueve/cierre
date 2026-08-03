@@ -1,5 +1,5 @@
 <?php
-require 'db.php';
+require __DIR__ . '/includes/db.php';
 
 // Seguridad: Solo admin
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') { 
@@ -91,9 +91,9 @@ $users = $pdo->query("SELECT id, username, rol FROM usuarios ORDER BY username A
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Usuarios - SGO</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/css/style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="main.js" defer></script>
+    <script src="assets/js/main.js" defer></script>
     <style>
         .user-grid {
             display: grid;
@@ -229,7 +229,7 @@ $users = $pdo->query("SELECT id, username, rol FROM usuarios ORDER BY username A
 </head>
 <body class="fade-in">
 
-    <?php include 'header.php'; ?>
+    <?php include __DIR__ . '/includes/header.php'; ?>
 
     <div class="container">
         <div id="toast-container" class="toast-container"></div>

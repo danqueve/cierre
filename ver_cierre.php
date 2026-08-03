@@ -1,5 +1,5 @@
 <?php
-require 'db.php';
+require __DIR__ . '/includes/db.php';
 if (!isset($_SESSION['user_id'])) { header("Location: index.php"); exit; }
 
 $id = (int)($_GET['id'] ?? 0);
@@ -60,9 +60,9 @@ $netoRendir = $totalCobrado - ($comision + $saldoFavor) + $descuentoCreditos;
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="img/logo.png">
+    <link rel="icon" type="image/png" href="assets/img/logo.png">
     <title>Liquidación - <?= htmlspecialchars($cierre['zona']) ?></title>
-    <link rel="stylesheet" href="style.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="assets/css/style.css?v=<?= time() ?>">
     <style>
         /* --- ESTILOS GENERALES DE LA PÁGINA --- */
         body { 

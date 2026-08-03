@@ -1,5 +1,5 @@
 <?php
-require 'db.php';
+require __DIR__ . '/includes/db.php';
 if (!isset($_SESSION['user_id'])) { header("Location: index.php"); exit; }
 
 $id = $_GET['id'] ?? 0;
@@ -47,9 +47,9 @@ $totalPagar = $subtotalHoras + $saldoFavor - $descuento;
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="img/logo.png">
+    <link rel="icon" type="image/png" href="assets/img/logo.png">
     <title>Liquidación Horas - <?= $cierre['zona'] ?></title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/css/style.css">
     <style>
         body { background-color: #525659; }
         .preview-container { display: flex; justify-content: center; padding: 40px 0; min-height: 100vh; }

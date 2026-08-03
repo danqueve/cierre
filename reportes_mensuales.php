@@ -1,5 +1,5 @@
 <?php
-require 'db.php';
+require __DIR__ . '/includes/db.php';
 if (!isset($_SESSION['user_id'])) { header("Location: index.php"); exit; }
 
 // --- CONFIGURACIÓN DE FILTROS ---
@@ -96,7 +96,7 @@ foreach($reporte as $fila) {
 <head>
     <meta charset="UTF-8">
     <title>Reporte Mensual - Moderno</title>
-    <link rel="stylesheet" href="style.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="assets/css/style.css?v=<?= time() ?>">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -108,7 +108,7 @@ foreach($reporte as $fila) {
 <body>
 
     <div class="no-print">
-        <?php include 'header.php'; ?>
+        <?php include __DIR__ . '/includes/header.php'; ?>
     </div>
 
     <div class="report-wrapper">

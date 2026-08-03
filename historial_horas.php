@@ -1,5 +1,5 @@
 <?php
-require 'db.php';
+require __DIR__ . '/includes/db.php';
 if (!isset($_SESSION['user_id'])) { header("Location: index.php"); exit; }
 
 // --- CONSULTA HISTORIAL DE HORAS ---
@@ -29,7 +29,7 @@ $historial = $stmt->fetchAll();
 <head>
     <meta charset="UTF-8">
     <title>Historial de Horas</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/css/style.css">
     <style>
         /* Estilos específicos para esta tabla */
         table { text-align: center; }
@@ -46,7 +46,7 @@ $historial = $stmt->fetchAll();
 </head>
 <body>
     
-    <?php include 'header.php'; ?>
+    <?php include __DIR__ . '/includes/header.php'; ?>
 
     <div class="container">
         

@@ -1,5 +1,5 @@
 <?php
-require 'db.php';
+require __DIR__ . '/includes/db.php';
 // 1. Validar Sesión
 // session_start(); // Eliminado porque db.php ya inicia la sesión
 if (!isset($_SESSION['user_id'])) { 
@@ -73,10 +73,10 @@ $g_comision = 0; $g_gastos = 0; $g_neto = 0;
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="img/logo.png">
+    <link rel="icon" type="image/png" href="assets/img/logo.png">
     <title>Imprimir Reporte - <?= $meses[$mes_actual] ?> <?= $anio_actual ?></title>
     <!-- Incluimos style.css para reusar las clases @media print -->
-    <link rel="stylesheet" href="style.css?v=<?= time() ?>">
+    <link rel="stylesheet" href="assets/css/style.css?v=<?= time() ?>">
     <style>
         /* Forzar estilos de impresión en pantalla para esta vista dedicada */
         body { 

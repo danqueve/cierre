@@ -7,7 +7,7 @@ $pagina_actual = basename($_SERVER['PHP_SELF']);
         <!-- Logo / Marca -->
         <div class="header-brand">
             <div class="brand-logo">
-                <img src="img/logo.png" alt="Logo Imperio Cierres" style="width:32px; height:32px; object-fit:contain; border-radius:6px;">
+                <img src="assets/img/logo.png" alt="Logo Imperio Cierres" style="width:32px; height:32px; object-fit:contain; border-radius:6px;">
             </div>
             <span class="brand-text">Imperio<span class="brand-dot">.</span></span>
         </div>
@@ -72,7 +72,7 @@ $pagina_actual = basename($_SERVER['PHP_SELF']);
         <div class="mobile-nav-header">
             <div class="header-brand">
                 <div class="brand-logo">
-                    <img src="img/logo.png" alt="Logo Imperio Cierres" style="width:32px; height:32px; object-fit:contain; border-radius:6px;">
+                    <img src="assets/img/logo.png" alt="Logo Imperio Cierres" style="width:32px; height:32px; object-fit:contain; border-radius:6px;">
                 </div>
                 <span class="brand-text">Imperio<span class="brand-dot">.</span></span>
             </div>
@@ -139,7 +139,7 @@ $pagina_actual = basename($_SERVER['PHP_SELF']);
     var favicon = document.createElement('link');
     favicon.rel = 'icon';
     favicon.type = 'image/png';
-    favicon.href = 'img/logo.png';
+    favicon.href = 'assets/img/logo.png';
     document.head.appendChild(favicon);
 })();
 

@@ -1,5 +1,5 @@
 <?php
-require 'db.php';
+require __DIR__ . '/includes/db.php';
 if (!isset($_SESSION['user_id'])) { header("Location: index.php"); exit; }
 
 // --- 1. Lógica de Filtrado por Fecha ---
@@ -125,7 +125,7 @@ foreach($dataDiaria as $d) $sparklineDataGlobal[] = $d['total_dia'];
 <head>
     <meta charset="UTF-8">
     <title>Dashboard - Cobranzas</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/css/style.css">
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -320,7 +320,7 @@ foreach($dataDiaria as $d) $sparklineDataGlobal[] = $d['total_dia'];
 </head>
 <body>
 
-    <?php include 'header.php'; ?>
+    <?php include __DIR__ . '/includes/header.php'; ?>
 
     <div class="container">
 
