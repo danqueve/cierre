@@ -4,7 +4,7 @@ if (!isset($_SESSION['user_id'])) { header("Location: index.php"); exit; }
 
 $mensaje = '';
 $dias = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
-$empleados = ['Alejandro', 'Lourdes', 'Maxi'];
+$empleados = ['Alejandro', 'Lourdes', 'Maxi', 'Cristian'];
 
 // Modo edición: cargar datos existentes si se pasa ?id=X
 $editando    = false;
