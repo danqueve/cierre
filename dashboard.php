@@ -57,9 +57,9 @@ $dataDiaria = $stmtDia->fetchAll();
 // --- Colores para el gráfico circular (Zonas) --- pastel-friendly
 function getZoneColor($zonaName) {
     switch($zonaName) {
-        case 'Zona 1': return '#7c3aed'; // Purple
-        case 'Zona 2': return '#2563eb'; // Blue
-        case 'Zona 3': return '#059669'; // Green
+        case 'Zona Este': return '#7c3aed'; // Purple
+        case 'Zona Norte': return '#2563eb'; // Blue
+        case 'Zona Sur': return '#059669'; // Green
         case 'Zona 4a6': return '#b45309'; // Yellow
         default: return '#dc2626';
     }

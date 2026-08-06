@@ -4,7 +4,7 @@ if (!isset($_SESSION['user_id'])) { header("Location: index.php"); exit; }
 
 $mensaje = '';
 $dias = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
-$zonas = ['Zona 1', 'Zona 2', 'Zona 3', 'Zona 4a6'];
+$zonas = ['Zona Este', 'Zona Norte', 'Zona Sur', 'Zona 4a6'];
 
 // Procesar Guardado
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

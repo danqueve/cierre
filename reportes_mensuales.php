@@ -14,7 +14,7 @@ $meses = [
 ];
 
 // Lista de zonas (Idealmente vendría de DB)
-$zonas_lista = ['Zona 1', 'Zona 2', 'Zona 3', 'Zona 4a6'];
+$zonas_lista = ['Zona Este', 'Zona Norte', 'Zona Sur', 'Zona 4a6'];
 
 // --- LÓGICA DE CONSULTA ---
 if ($zona_filtro === 'todas') {
