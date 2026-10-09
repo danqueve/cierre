@@ -55,377 +55,136 @@ $descuentoCreditos = $cierre['descuento_creditos'] ?? 0;
 
 $sueldoCobrador = ($comision + $saldoFavor) - ($totalGasto + $descuentoCreditos);
 $netoRendir = $totalCobrado - ($comision + $saldoFavor) + $descuentoCreditos;
+
+$dias_nom = ['LUNES' => 'Lunes', 'MARTES' => 'Martes', 'MIERCOLES' => 'Miércoles', 'JUEVES' => 'Jueves', 'VIERNES' => 'Viernes', 'SABADO' => 'Sábado'];
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/png" href="assets/img/logo.png">
     <title>Liquidación - <?= htmlspecialchars($cierre['zona']) ?></title>
-    <link rel="stylesheet" href="assets/css/style.css?v=<?= time() ?>">
-    <style>
-        /* --- ESTILOS GENERALES DE LA PÁGINA --- */
-        body { 
-            background-color: #525659; 
-            margin: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        .preview-container { 
-            display: flex; 
-            justify-content: center; 
-            padding: 40px 0; 
-            min-height: 100vh; 
-        }
-        
-        .a4-page {
-            width: 210mm;
-            min-height: 297mm;
-            padding: 15mm 20mm;
-            margin: 0 auto;
-            background: white;
-            box-shadow: 0 0 15px rgba(0,0,0,0.3);
-            color: #333;
-            position: relative;
-            box-sizing: border-box;
-        }
-
-        /* --- CABECERA DEL DOCUMENTO --- */
-        .doc-header { 
-            text-align: center; 
-            margin-bottom: 25px; 
-            border-bottom: 3px solid #2c3e50; 
-            padding-bottom: 15px; 
-        }
-        .doc-header h2 { 
-            margin: 0; 
-            font-size: 24pt; 
-            color: #066bcf; /* Azul como en la captura */
-        }
-        .doc-header p { 
-            color: #333; 
-            margin: 8px 0 0 0; 
-            font-size: 13pt; 
-        }
-        
-        .doc-info { 
-            display: flex; 
-            justify-content: space-between; 
-            margin-bottom: 25px; 
-            font-size: 11pt; 
-            background-color: #f8f9fa;
-            padding: 12px;
-            border-radius: 6px;
-        }
-
-        /* --- ESTILOS DE TABLA (TEXTO NEGRO) --- */
-        .main-table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            margin-bottom: 30px; 
-            background-color: #fff;
-        }
-
-        .main-table th { 
-            background-color: #f2f2f2; 
-            color: #000; /* Texto Negro */
-            border: 1px solid #ccc; 
-            padding: 12px 8px; 
-            text-transform: uppercase; 
-            font-weight: bold;
-            text-align: center;
-        }
-
-        .main-table td { 
-            border: 1px solid #dee2e6; 
-            padding: 10px 8px; 
-            color: #000; /* Texto Negro */
-            vertical-align: middle;
-        }
-
-        .main-table tr:nth-child(even) { 
-            background-color: #f9f9f9; 
-        }
-
-        .main-table tfoot td { 
-            background-color: #eeeeee; 
-            font-weight: bold; 
-            border-top: 2px solid #000; 
-            color: #000; /* Texto Negro */
-            font-size: 11pt;
-        }
-
-        /* --- SECCIÓN DE LIQUIDACIÓN --- */
-        .liquidation-section {
-            display: flex; 
-            justify-content: space-between; 
-            gap: 20px; 
-            margin-top: 30px;
-        }
-        
-        .liq-box {
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            overflow: hidden;
-            width: 48%;
-            background: #fff;
-        }
-
-        .liq-title {
-            padding: 10px;
-            font-weight: bold;
-            text-align: center;
-            color: white;
-            text-transform: uppercase;
-        }
-
-        .box-cobrador .liq-title { background-color: #6c757d; }
-        .box-empresa .liq-title { background-color: #2c3e50; }
-
-        .liq-content { padding: 15px; }
-
-        .liq-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 0;
-            border-bottom: 1px dashed #eee;
-            color: #000;
-        }
-
-        .liq-total {
-            background-color: #f8f9fa;
-            padding: 12px;
-            font-weight: bold;
-            font-size: 13pt;
-            display: flex;
-            justify-content: space-between;
-            border-top: 2px solid #333;
-            color: #000;
-        }
-
-        .firma-box { 
-            margin-top: 80px; 
-            display: flex; 
-            justify-content: center; 
-            text-align: center; 
-        }
-        .firma-line { 
-            border-top: 1px solid #000; 
-            width: 250px; 
-            padding-top: 8px; 
-        }
-
-        /* --- ESTILOS DE IMPRESIÓN --- */
-        @media print {
-            @page {
-                size: A4 portrait;
-                margin: 12mm 15mm;
-            }
-
-            body, html {
-                background: white !important;
-                color: #000 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-
-            /* Anular cualquier estilo oscuro heredado del CSS global */
-            *, *::before, *::after {
-                background-color: transparent !important;
-                color: #000 !important;
-                box-shadow: none !important;
-                text-shadow: none !important;
-            }
-
-            .preview-container { display: block !important; padding: 0 !important; }
-            .a4-page { box-shadow: none !important; border: none !important; width: 100% !important; margin: 0 !important; padding: 0 !important; background: white !important; }
-            .no-print { display: none !important; }
-
-            /* Cabecera */
-            .doc-header h2 { color: #066bcf !important; }
-            .doc-info { background-color: #f8f9fa !important; }
-
-            /* Tabla */
-            .main-table { background-color: #fff !important; }
-            .main-table th { background-color: #e0e0e0 !important; color: #000 !important; border: 1px solid #000 !important; }
-            .main-table td { background-color: #fff !important; color: #000 !important; border: 1px solid #000 !important; }
-            .main-table tr:nth-child(even) td { background-color: #f9f9f9 !important; }
-            .main-table tfoot td { background-color: #eeeeee !important; color: #000 !important; border-top: 2px solid #000 !important; }
-
-            /* Cajas de liquidación */
-            .liq-box { border: 1px solid #000 !important; background: #fff !important; }
-            .box-cobrador .liq-title { background-color: #6c757d !important; color: #fff !important; }
-            .box-empresa .liq-title { background-color: #2c3e50 !important; color: #fff !important; }
-            .liq-content { background: #fff !important; }
-            .liq-row { color: #000 !important; border-bottom: 1px dashed #ccc !important; }
-            .liq-total { background-color: #f8f9fa !important; color: #000 !important; border-top: 2px solid #333 !important; }
-
-            /* Evitar cortes dentro de filas y secciones */
-            .main-table tr { page-break-inside: avoid; }
-            .liquidation-section { page-break-inside: avoid; }
-
-            /* Ocultar URLs impresas por el navegador */
-            a[href]:after { content: none !important; }
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/organic.css">
+    <link rel="stylesheet" href="assets/css/imperio.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>window.addEventListener('load', function() { if (typeof lucide !== 'undefined') lucide.createIcons(); });</script>
 </head>
-<body> 
+<body>
+    <?php include __DIR__ . '/includes/header.php'; ?>
 
-    <!-- Botones Flotantes -->
-    <div class="no-print" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
-        <button onclick="window.close()" style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
-            Cerrar Pestaña
-        </button>
-        <button onclick="printAndClose()" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-left: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
-            Imprimir
-        </button>
-    </div>
-
-    <div class="preview-container">
-        <div class="a4-page">
-            
-            <div class="doc-header">
-                <h2>Liquidación Semanal de Cobranza</h2>
-                <p>Gestión de Zona: <strong><?= htmlspecialchars($cierre['zona']) ?></strong></p>
+    <main class="imp-main">
+        <div class="sheet-page">
+            <div class="sheet-toolbar no-print">
+                <div class="imp-page-head">
+                    <span class="imp-kicker">Vista de impresión · A4</span>
+                    <h2>Cierre de <?= htmlspecialchars($cierre['zona']) ?></h2>
+                </div>
+                <a href="historial.php" class="btn btn-secondary">
+                    <i data-lucide="arrow-left" style="width:16px; height:16px;"></i> Volver al historial
+                </a>
+                <button type="button" onclick="window.print()" class="btn btn-primary">
+                    <i data-lucide="printer" style="width:16px; height:16px;"></i> Imprimir / Guardar PDF
+                </button>
             </div>
 
-            <div class="doc-info">
-                <div><strong>Semana del:</strong> <?= date('d/m/Y', strtotime($cierre['fecha_inicio'])) ?></div>
-                <div><strong>Fecha Emisión:</strong> <?= date('d/m/Y') ?></div>
-                <div><strong>Usuario:</strong> <?= htmlspecialchars($_SESSION['username'] ?? 'Admin') ?></div>
-            </div>
+            <div class="sheet-wrap">
+                <div class="sheet compact">
 
-            <!-- Tabla de Detalles con texto negro -->
-            <table class="main-table">
-                <thead>
-                    <tr>
-                        <th style="width: 15%;">Día</th>
-                        <th style="width: 15%;">Efectivo</th>
-                        <th style="width: 15%;">Transf.</th>
-                        <th style="width: 15%;">Total</th>
-                        <th style="width: 15%;">Gastos</th>
-                        <th>Detalle Gasto</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach($detalles as $d): 
-                        $sub = $d['efectivo'] + $d['transferencia'];
-                    ?>
-                    <tr>
-                        <td style="font-weight: 600;"><?= $d['dia_semana'] ?></td>
-                        <td style="text-align: right;"><?= formatCurrency($d['efectivo']) ?></td>
-                        <td style="text-align: right;"><?= formatCurrency($d['transferencia']) ?></td>
-                        <td style="text-align: right; font-weight: bold;"><?= formatCurrency($sub) ?></td>
-                        <td style="text-align: right;"><?= ($d['gasto_monto'] > 0) ? formatCurrency($d['gasto_monto']) : '<span style="color: #aaa;">-</span>' ?></td>
-                        <td style="font-style: italic; font-size: 9pt;"><?= htmlspecialchars($d['gasto_concepto']) ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td>TOTALES</td>
-                        <td style="text-align: right;"><?= formatCurrency($totalEf) ?></td>
-                        <td style="text-align: right;"><?= formatCurrency($totalTr) ?></td>
-                        <td style="text-align: right;"><?= formatCurrency($totalCobrado) ?></td>
-                        <td style="text-align: right;"><?= formatCurrency($totalGasto) ?></td>
-                        <td></td>
-                    </tr>
-                </tfoot>
-            </table>
+                    <div class="sheet-head">
+                        <img class="sheet-logo" src="assets/img/logo.png" alt="Imperio">
+                        <div class="sheet-brand"><b>Imperio<span>.</span></b><small>Sistema de gestión</small></div>
+                        <span class="tag tag-accent" style="font-size:12px; padding:6px 12px;"><?= htmlspecialchars($cierre['zona']) ?></span>
+                    </div>
 
-            <!-- SECCIÓN DE LIQUIDACIÓN -->
-            <div class="liquidation-section">
-                
-                <!-- 1. LIQUIDACIÓN DEL COBRADOR -->
-                <div class="liq-box box-cobrador">
-                    <div class="liq-title">Liquidación Cobrador</div>
-                    <div class="liq-content">
-                        <div class="liq-row">
-                            <span>(+) Comisión (6%):</span>
-                            <span><?= formatCurrency($comision) ?></span>
-                        </div>
-                        <div class="liq-row">
-                            <span>(+) Saldo a Favor:</span>
-                            <span><?= formatCurrency($saldoFavor) ?></span>
-                        </div>
-                        <?php if($cierre['saldo_concepto']): ?>
-                            <div style="font-size: 9pt; color: #666; font-style: italic; text-align: right; margin-top: -5px;">
-                                (<?= htmlspecialchars($cierre['saldo_concepto']) ?>)
-                            </div>
-                        <?php endif; ?>
-                        
-                        <div class="liq-row">
-                            <span>(-) Desc. Gastos:</span>
-                            <span>- <?= formatCurrency($totalGasto) ?></span>
+                    <div class="sheet-title">
+                        <h1>Liquidación semanal de cobranza</h1>
+                        <span class="sheet-sub">Gestión de zona: <strong><?= htmlspecialchars($cierre['zona']) ?></strong></span>
+                    </div>
+
+                    <div class="sheet-info">
+                        <div><small>Semana del</small><strong><?= date('d/m/Y', strtotime($cierre['fecha_inicio'])) ?></strong></div>
+                        <div><small>Fecha emisión</small><strong><?= date('d/m/Y') ?></strong></div>
+                        <div><small>Usuario</small><strong><?= htmlspecialchars($_SESSION['username'] ?? 'Admin') ?></strong></div>
+                    </div>
+
+                    <div class="sheet-table-wrap">
+                        <table class="sheet-table">
+                            <thead>
+                                <tr>
+                                    <th>Día</th>
+                                    <th class="r">Efectivo</th>
+                                    <th class="r">Transf.</th>
+                                    <th class="r">Total</th>
+                                    <th class="r">Gastos</th>
+                                    <th>Detalle gasto</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach($detalles as $d):
+                                    $sub = $d['efectivo'] + $d['transferencia'];
+                                ?>
+                                <tr>
+                                    <td><strong><?= $dias_nom[$d['dia_semana']] ?? htmlspecialchars($d['dia_semana']) ?></strong></td>
+                                    <td class="r"><?= formatCurrency($d['efectivo']) ?></td>
+                                    <td class="r"><?= formatCurrency($d['transferencia']) ?></td>
+                                    <td class="r"><strong><?= formatCurrency($sub) ?></strong></td>
+                                    <td class="r gasto-col"><?= ($d['gasto_monto'] > 0) ? formatCurrency($d['gasto_monto']) : '-' ?></td>
+                                    <td class="note"><?= htmlspecialchars($d['gasto_concepto'] ?? '') ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td>TOTALES</td>
+                                    <td class="r"><?= formatCurrency($totalEf) ?></td>
+                                    <td class="r"><?= formatCurrency($totalTr) ?></td>
+                                    <td class="r"><?= formatCurrency($totalCobrado) ?></td>
+                                    <td class="r"><?= formatCurrency($totalGasto) ?></td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div class="sheet-two">
+                        <!-- 1. Liquidación del cobrador -->
+                        <div class="sheet-box">
+                            <h4>Liquidación cobrador</h4>
+                            <div class="sheet-line"><span>(+) Comisión (6%)</span><span><?= formatCurrency($comision) ?></span></div>
+                            <div class="sheet-line"><span>(+) Saldo a favor</span><span><?= formatCurrency($saldoFavor) ?></span></div>
+                            <?php if($cierre['saldo_concepto']): ?>
+                                <div class="sheet-line-note">(<?= htmlspecialchars($cierre['saldo_concepto']) ?>)</div>
+                            <?php endif; ?>
+                            <div class="sheet-line"><span>(−) Desc. gastos</span><span>− <?= formatCurrency($totalGasto) ?></span></div>
+                            <div class="sheet-line"><span>(−) Desc. créditos</span><span>− <?= formatCurrency($descuentoCreditos) ?></span></div>
+                            <?php if($cierre['descuento_creditos_concepto']): ?>
+                                <div class="sheet-line-note">(<?= htmlspecialchars($cierre['descuento_creditos_concepto']) ?>)</div>
+                            <?php endif; ?>
+                            <div class="sheet-grand"><strong>A COBRAR</strong><span><?= formatCurrency($sueldoCobrador) ?></span></div>
                         </div>
 
-                        <div class="liq-row">
-                            <span>(-) Desc. Créditos:</span>
-                            <span>- <?= formatCurrency($descuentoCreditos) ?></span>
-                        </div>
-                        <?php if($cierre['descuento_creditos_concepto']): ?>
-                            <div style="font-size: 9pt; color: #666; font-style: italic; text-align: right; margin-top: -5px;">
-                                (<?= htmlspecialchars($cierre['descuento_creditos_concepto']) ?>)
-                            </div>
-                        <?php endif; ?>
-
-                        <div class="liq-total" style="margin-top: 10px;">
-                            <span>A Cobrar:</span>
-                            <span><?= formatCurrency($sueldoCobrador) ?></span>
+                        <!-- 2. Neto a rendir empresa -->
+                        <div class="sheet-box sage">
+                            <h4>Neto a rendir (empresa)</h4>
+                            <div class="sheet-line"><span>Total cobranza bruta</span><strong><?= formatCurrency($totalCobrado) ?></strong></div>
+                            <div class="sheet-line"><span>(−) Comisión (6%)</span><span>− <?= formatCurrency($comision) ?></span></div>
+                            <div class="sheet-line"><span>(−) Saldo a favor</span><span>− <?= formatCurrency($saldoFavor) ?></span></div>
+                            <div class="sheet-line"><span>(+) Retención créditos</span><span>+ <?= formatCurrency($descuentoCreditos) ?></span></div>
+                            <div class="sheet-grand"><strong>TOTAL FINAL</strong><span><?= formatCurrency($netoRendir) ?></span></div>
                         </div>
                     </div>
-                </div>
 
-                <!-- 2. NETO A RENDIR EMPRESA -->
-                <div class="liq-box box-empresa">
-                    <div class="liq-title">Neto a Rendir (Empresa)</div>
-                    <div class="liq-content">
-                        <div class="liq-row">
-                            <span>Total Cobranza Bruta:</span>
-                            <strong><?= formatCurrency($totalCobrado) ?></strong>
-                        </div>
-                        <div class="liq-row">
-                            <span>(-) Comisión (6%):</span>
-                            <span>- <?= formatCurrency($comision) ?></span>
-                        </div>
-                        <div class="liq-row">
-                            <span>(-) Saldo a Favor:</span>
-                            <span>- <?= formatCurrency($saldoFavor) ?></span>
-                        </div>
-                        <div class="liq-row">
-                            <span>(+) Retención Créditos:</span>
-                            <span>+ <?= formatCurrency($descuentoCreditos) ?></span>
-                        </div>
-                        
-                        <div style="margin-top: 15px; font-size: 9pt; color: #555; font-style: italic; text-align: center; border: 1px dashed #ccc; padding: 5px;">
-                            * Los gastos fueron descontados del sueldo del cobrador.
-                        </div>
+                    <span class="sheet-note">* Los gastos fueron descontados del sueldo del cobrador.</span>
+
+                    <div class="sheet-signs">
+                        <div class="sheet-sign"><strong>Firma administración</strong></div>
                     </div>
-                    <div class="liq-total">
-                        <span>TOTAL FINAL:</span>
-                        <span><?= formatCurrency($netoRendir) ?></span>
-                    </div>
-                </div>
 
-            </div>
-
-            <div class="firma-box">
-                <div>
-                    <div class="firma-line">Firma Administración</div>
+                    <div class="sheet-foot">Documento generado por el Sistema de Gestión.</div>
                 </div>
             </div>
-
         </div>
-    </div>
-
-<script>
-    function printAndClose() {
-        window.onafterprint = function() {
-            window.close();
-        };
-        window.print();
-    }
-</script>
-
+    </main>
 </body>
 </html>

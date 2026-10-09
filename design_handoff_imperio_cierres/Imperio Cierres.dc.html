@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="assets/css/organic.css">
+<style>
+body{margin:0;background:var(--color-bg)}
+a{color:var(--color-accent-700)}a:hover{color:var(--color-accent-800)}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media print{
+@page{size:A4 portrait;margin:0}
+body{background:#fff!important}
+[data-noprint]{display:none!important}
+[data-sheetwrap]{padding:0!important;background:none!important;border-radius:0!important;overflow:visible!important}
+[data-sheet]{box-shadow:none!important;margin:0!important;border-radius:0!important;background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-direction:column;font-family:var(--font-body);color:var(--color-text)">
+
+<header data-noprint="" style="display:flex;align-items:center;gap:var(--space-4);flex-wrap:wrap;padding:var(--space-3) clamp(16px,4vw,48px)">
+  <div style="display:flex;align-items:center;gap:10px;margin-right:auto">
+    <div style="width:44px;height:44px;border-radius:50%;background:var(--color-neutral-100);display:grid;place-items:center;overflow:hidden;box-shadow:var(--shadow-sm)">
+      <img src="assets/img/logo.png" alt="Imperio" style="width:36px;height:36px;object-fit:contain">
+    </div>
+    <span style="font-family:var(--font-heading);font-size:22px">Imperio<span style="color:var(--color-accent)">.</span></span>
+  </div>
+  <nav style="display:flex;flex-wrap:wrap;gap:4px">
+    <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6">
+      <button onClick="{{ n.onClick }}" style="font:inherit;font-size:14px;font-weight:600;border:0;cursor:pointer;padding:8px 16px;border-radius:999px;background:{{ n.bg }};color:{{ n.fg }}">{{ n.label }}</button>
+    </sc-for>
+  </nav>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div style="display:flex;flex-direction:column;align-items:flex-end;line-height:1.2">
+      <span style="font-weight:700;font-size:14px">daniel</span>
+      <span style="font-size:12px;color:var(--color-neutral-700)">admin</span>
+    </div>
+    <div style="width:38px;height:38px;border-radius:50%;background:var(--color-accent-2-300);color:var(--color-accent-2-900);display:grid;place-items:center;font-family:var(--font-heading);font-size:16px">D</div>
+  </div>
+</header>
+
+<main style="flex:1;width:100%;max-width:1240px;margin:0 auto;padding:var(--space-4) clamp(16px,4vw,48px) 80px;box-sizing:border-box">
+
+<!-- ═══ CARGAR COBRANZAS ═══ -->
+<sc-if value="{{ isCargar }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;flex-direction:column;gap:var(--space-6)">
+    <div style="display:flex;flex-direction:column;gap:6px;max-width:640px">
+      <span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-700);font-weight:700">Cobranzas</span>
+      <h1 style="margin:0;font-size:44px">Carga de cobranzas</h1>
+      <p style="margin:0;font-size:16px;color:var(--color-neutral-700)">Registrá los montos cobrados por zona y semana.</p>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:var(--space-6);align-items:flex-start">
+      <div style="flex:1 1 620px;min-width:0;display:flex;flex-direction:column;gap:var(--space-4)">
+
+        <section style="background:var(--color-surface);border-radius:32px;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-4)">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:13px;font-weight:700;color:var(--color-neutral-800)">Zona de cobranza</span>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{ zonas }}" as="z" hint-placeholder-count="7">
+                <button onClick="{{ z.onClick }}" style="font:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:9px 18px;border-radius:999px;border:1.5px solid {{ z.bd }};background:{{ z.bg }};color:{{ z.fg }}">{{ z.name }}</button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:var(--space-4);align-items:flex-end">
+            <div class="field" style="flex:0 1 240px">
+              <label>Inicio de semana (lunes)</label>
+              <input type="date" class="input" value="{{ fecha }}" onChange="{{ onFecha }}" style="min-height:44px;background:var(--color-neutral-100)">
+            </div>
+            <span class="tag tag-accent-2" style="font-size:13px;padding:8px 14px;margin-bottom:4px">{{ semanaLabel }}</span>
+            <div class="seg" style="margin-left:auto;background:var(--color-neutral-100)">
+              <label class="seg-opt" style="padding:10px 18px;font-size:14px;font-weight:600"><input type="radio" name="modo" checked="{{ isSemanal }}" onChange="{{ setSemanal }}">Semana completa</label>
+              <label class="seg-opt" style="padding:10px 18px;font-size:14px;font-weight:600"><input type="radio" name="modo" checked="{{ isDiario }}" onChange="{{ setDiario }}">Día por día</label>
+            </div>
+          </div>
+        </section>
+
+        <sc-if value="{{ isSemanal }}" hint-placeholder-val="{{ true }}">
+          <section style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:grid;grid-template-columns:150px repeat(3,minmax(0,1fr)) minmax(0,1.3fr);gap:10px;padding:0 18px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--color-neutral-700)">
+              <span>Día</span><span>Efectivo</span><span>Transferencia</span><span style="color:var(--color-accent-700)">Gasto</span><span>Concepto gasto</span>
+            </div>
+            <sc-for list="{{ cobRows }}" as="d" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:150px repeat(3,minmax(0,1fr)) minmax(0,1.3fr);gap:10px;align-items:center;background:var(--color-neutral-100);border-radius:999px;padding:8px 10px 8px 8px;box-shadow:var(--shadow-sm)">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="width:40px;height:40px;border-radius:50%;background:var(--color-accent-200);color:var(--color-accent-800);display:grid;place-items:center;font-family:var(--font-heading);font-size:15px">{{ d.short }}</span>
+                  <div style="display:flex;flex-direction:column;line-height:1.15">
+                    <span style="font-weight:700;font-size:14px">{{ d.label }}</span>
+                    <span style="font-size:12px;color:var(--color-neutral-700)">{{ d.fecha }}</span>
+                  </div>
+                </div>
+                <div style="position:relative"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--color-neutral-600)">$</span><input type="number" inputmode="decimal" class="input" placeholder="0" value="{{ d.ef }}" onChange="{{ d.onEf }}" style="padding-left:26px;background:var(--color-bg)"></div>
+                <div style="position:relative"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--color-neutral-600)">$</span><input type="number" inputmode="decimal" class="input" placeholder="0" value="{{ d.tr }}" onChange="{{ d.onTr }}" style="padding-left:26px;background:var(--color-bg)"></div>
+                <div style="position:relative"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--color-accent-700)">$</span><input type="number" inputmode="decimal" class="input" placeholder="0" value="{{ d.gm }}" onChange="{{ d.onGm }}" style="padding-left:26px;background:var(--color-accent-100);color:var(--color-accent-800)"></div>
+                <input type="text" class="input" placeholder="Detalle…" value="{{ d.gc }}" onChange="{{ d.onGc }}" style="background:var(--color-bg)">
+              </div>
+            </sc-for>
+          </section>
+        </sc-if>
+
+        <sc-if value="{{ isDiario }}" hint-placeholder-val="{{ false }}">
+          <section style="background:var(--color-neutral-100);border-radius:32px;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-4);box-shadow:var(--shadow-sm)">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:13px;font-weight:700;color:var(--color-neutral-800)">Seleccioná el día a cargar</span>
+              <div style="display:flex;flex-wrap:wrap;gap:10px">
+                <sc-for list="{{ diaPicker }}" as="p" hint-placeholder-count="6">
+                  <button onClick="{{ p.onClick }}" style="font:inherit;cursor:pointer;border:0;width:72px;height:72px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:{{ p.bg }};color:{{ p.fg }}">
+                    <span style="font-family:var(--font-heading);font-size:18px">{{ p.short }}</span>
+                    <span style="font-size:11px;font-weight:600">{{ p.fecha }}</span>
+                  </button>
+                </sc-for>
+              </div>
+              <span style="font-size:14px;color:var(--color-neutral-700)">Fecha del pago: <strong style="color:var(--color-accent-2-700)">{{ fechaPago }}</strong></span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-3)">
+              <div class="field"><label>Monto efectivo</label><input type="number" class="input" placeholder="0.00" value="{{ diario.ef }}" onChange="{{ onDiaEf }}" style="min-height:44px"></div>
+              <div class="field"><label>Monto transferencia</label><input type="number" class="input" placeholder="0.00" value="{{ diario.tr }}" onChange="{{ onDiaTr }}" style="min-height:44px"></div>
+              <div class="field"><label style="color:var(--color-accent-700)">Gasto (monto)</label><input type="number" class="input" placeholder="0.00" value="{{ diario.gm }}" onChange="{{ onDiaGm }}" style="min-height:44px;background:var(--color-accent-100);color:var(--color-accent-800)"></div>
+              <div class="field"><label>Concepto gasto</label><input type="text" class="input" placeholder="Ej. Nafta" value="{{ diario.gc }}" onChange="{{ onDiaGc }}" style="min-height:44px"></div>
+            </div>
+          </section>
+        </sc-if>
+
+        <div style="display:flex;align-items:baseline;gap:10px;margin-top:var(--space-3)">
+          <h3 style="margin:0;font-size:24px">Ajustes finales</h3>
+          <span style="font-size:13px;color:var(--color-neutral-700)">Opcional</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--space-4)">
+          <div style="background:var(--color-accent-2-100);border-radius:32px;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-3)">
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:32px;height:32px;border-radius:50%;background:var(--color-accent-2-600);color:var(--color-accent-2-100);display:grid;place-items:center;font-size:20px;font-weight:700">+</span><span style="font-family:var(--font-heading);font-size:18px;color:var(--color-accent-2-800)">Saldo a favor</span></div>
+            <div class="field"><label>Monto</label><input type="number" class="input" placeholder="0.00" value="{{ saldo }}" onChange="{{ onSaldo }}" style="min-height:44px;background:var(--color-neutral-100)"></div>
+            <div class="field"><label>Concepto</label><input type="text" class="input" placeholder="Ej. Bono por objetivos" value="{{ saldoC }}" onChange="{{ onSaldoC }}" style="min-height:44px;background:var(--color-neutral-100)"></div>
+          </div>
+          <div style="background:var(--color-accent-100);border-radius:32px;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-3)">
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:32px;height:32px;border-radius:50%;background:var(--color-accent-600);color:var(--color-accent-100);display:grid;place-items:center;font-size:20px;font-weight:700">−</span><span style="font-family:var(--font-heading);font-size:18px;color:var(--color-accent-800)">Descuento créditos</span></div>
+            <div class="field"><label>Monto</label><input type="number" class="input" placeholder="0.00" value="{{ desc }}" onChange="{{ onDesc }}" style="min-height:44px;background:var(--color-neutral-100)"></div>
+            <div class="field"><label>Concepto</label><input type="text" class="input" placeholder="Ej. Cuota 1/3 Préstamo" value="{{ descC }}" onChange="{{ onDescC }}" style="min-height:44px;background:var(--color-neutral-100)"></div>
+          </div>
+        </div>
+      </div>
+
+      <aside style="flex:1 1 300px;max-width:400px;position:sticky;top:16px;background:var(--color-text);color:var(--color-bg);border-radius:36px;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-3)">
+        <span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300);font-weight:700">Resumen · {{ zona }}</span>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <span style="font-size:13px;color:var(--color-neutral-400)">Total cobrado</span>
+          <span style="font-family:var(--font-body);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;font-size:44px;line-height:1.1">{{ cobTotal }}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:14px">
+          <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--color-neutral-300)">Efectivo</span><strong>{{ cobEf }}</strong></div>
+          <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--color-neutral-300)">Transferencia</span><strong>{{ cobTr }}</strong></div>
+          <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--color-accent-300)">Gastos</span><strong style="color:var(--color-accent-300)">{{ cobGm }}</strong></div>
+          <div style="height:1px;background:var(--color-neutral-800)"></div>
+          <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--color-accent-2-300)">Saldo a favor (+)</span><strong style="color:var(--color-accent-2-300)">{{ saldoFmt }}</strong></div>
+          <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--color-accent-300)">Descuento créditos (−)</span><strong style="color:var(--color-accent-300)">{{ descFmt }}</strong></div>
+        </div>
+        <button class="btn btn-primary" onClick="{{ onGuardarCob }}" style="min-height:52px;font-size:16px;margin-top:var(--space-2);color:var(--color-text)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><path d="M17 21v-8H7v8M7 3v5h8"></path></svg>
+          Guardar datos
+        </button>
+      </aside>
+    </div>
+  </div>
+</sc-if>
+
+<!-- ═══ CARGAR HORARIOS ═══ -->
+<sc-if value="{{ isHoras }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column;gap:var(--space-6)">
+    <div style="display:flex;flex-direction:column;gap:6px;max-width:640px">
+      <span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-2-700);font-weight:700">Jornales</span>
+      <h1 style="margin:0;font-size:44px">Nueva liquidación de jornales</h1>
+      <p style="margin:0;font-size:16px;color:var(--color-neutral-700)">Cargá entrada y salida de cada día; las horas y el total se calculan solos.</p>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:var(--space-6);align-items:flex-start">
+      <div style="flex:1 1 620px;min-width:0;display:flex;flex-direction:column;gap:var(--space-4)">
+        <section style="background:var(--color-surface);border-radius:32px;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-4)">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:13px;font-weight:700;color:var(--color-neutral-800)">Empleado</span>
+            <div style="display:flex;flex-wrap:wrap;gap:10px">
+              <sc-for list="{{ empleados }}" as="e" hint-placeholder-count="5">
+                <button onClick="{{ e.onClick }}" style="font:inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;padding:5px 16px 5px 5px;border-radius:999px;border:1.5px solid {{ e.bd }};background:{{ e.bg }};color:{{ e.fg }}">
+                  <span style="width:30px;height:30px;border-radius:50%;background:var(--color-accent-2-300);color:var(--color-accent-2-900);display:grid;place-items:center;font-family:var(--font-heading);font-size:14px">{{ e.ini }}</span>{{ e.name }}
+                </button>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:var(--space-4);align-items:flex-end">
+            <div class="field" style="flex:0 1 220px"><label>Inicio de semana (lunes)</label><input type="date" class="input" value="{{ fecha }}" onChange="{{ onFecha }}" style="min-height:44px;background:var(--color-neutral-100)"></div>
+            <div class="field" style="flex:0 1 200px"><label style="color:var(--color-accent-2-700);font-weight:700">Valor hora</label>
+              <div style="position:relative"><span style="position:absolute;left:16px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--color-accent-2-700)">$</span><input type="number" class="input" placeholder="0.00" value="{{ valorHora }}" onChange="{{ onValorHora }}" style="min-height:44px;padding-left:30px;font-size:18px;font-weight:700;background:var(--color-accent-2-100);color:var(--color-accent-2-800)"></div>
+            </div>
+            <button class="btn btn-secondary" onClick="{{ copiarLunes }}" style="margin-left:auto;min-height:44px;background:var(--color-neutral-100)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+              Repetir horario del lunes
+            </button>
+          </div>
+        </section>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:var(--space-4)">
+          <sc-for list="{{ horaRows }}" as="d" hint-placeholder-count="6">
+            <div style="background:var(--color-neutral-100);border-radius:32px;padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3);box-shadow:var(--shadow-sm)">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="width:40px;height:40px;border-radius:50%;background:var(--color-accent-2-200);color:var(--color-accent-2-800);display:grid;place-items:center;font-family:var(--font-heading);font-size:15px">{{ d.short }}</span>
+                <div style="display:flex;flex-direction:column;line-height:1.15;margin-right:auto">
+                  <span style="font-weight:700;font-size:15px">{{ d.label }}</span>
+                  <span style="font-size:12px;color:var(--color-neutral-700)">{{ d.fecha }}</span>
+                </div>
+                <span style="font-family:var(--font-heading);font-size:16px;padding:6px 14px;border-radius:999px;background:{{ d.pillBg }};color:{{ d.pillFg }}">{{ d.total }}</span>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div class="field" style="min-width:0"><label>Entrada</label><input type="time" class="input" value="{{ d.e }}" onChange="{{ d.onE }}" style="min-height:44px;font-size:16px;font-variant-numeric:tabular-nums;background:var(--color-bg)"></div>
+                <div class="field" style="min-width:0"><label>Salida</label><input type="time" class="input" value="{{ d.s }}" onChange="{{ d.onS }}" style="min-height:44px;font-size:16px;font-variant-numeric:tabular-nums;background:var(--color-bg)"></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <div style="position:relative;height:10px;border-radius:999px;background:var(--color-neutral-300);overflow:hidden">
+                  <div style="position:absolute;top:0;bottom:0;border-radius:999px;background:var(--color-accent-2-500);left:{{ d.barL }};width:{{ d.barW }}"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--color-neutral-600)"><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>24h</span></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;align-items:baseline;gap:10px;margin-top:var(--space-3)">
+          <h3 style="margin:0;font-size:24px">Ajustes</h3>
+          <span style="font-size:13px;color:var(--color-neutral-700)">Opcional</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:var(--space-4)">
+          <div style="background:var(--color-accent-2-100);border-radius:32px;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-3)">
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:32px;height:32px;border-radius:50%;background:var(--color-accent-2-600);color:var(--color-accent-2-100);display:grid;place-items:center;font-size:20px;font-weight:700">+</span><span style="font-family:var(--font-heading);font-size:18px;color:var(--color-accent-2-800)">Ingresos extra</span></div>
+            <div class="field"><label>Monto</label><input type="number" class="input" placeholder="0.00" value="{{ hSaldo }}" onChange="{{ onHSaldo }}" style="min-height:44px;background:var(--color-neutral-100)"></div>
+            <div class="field"><label>Concepto</label><input type="text" class="input" placeholder="Concepto" value="{{ hSaldoC }}" onChange="{{ onHSaldoC }}" style="min-height:44px;background:var(--color-neutral-100)"></div>
+          </div>
+          <div style="background:var(--color-accent-100);border-radius:32px;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-3)">
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:32px;height:32px;border-radius:50%;background:var(--color-accent-600);color:var(--color-accent-100);display:grid;place-items:center;font-size:20px;font-weight:700">−</span><span style="font-family:var(--font-heading);font-size:18px;color:var(--color-accent-800)">Descuentos / adelantos</span></div>
+            <div class="field"><label>Monto</label><input type="number" class="input" placeholder="0.00" value="{{ hDesc }}" onChange="{{ onHDesc }}" style="min-height:44px;background:var(--color-neutral-100)"></div>
+            <div class="field"><label>Concepto</label><input type="text" class="input" placeholder="Concepto" value="{{ hDescC }}" onChange="{{ onHDescC }}" style="min-height:44px;background:var(--color-neutral-100)"></div>
+          </div>
+        </div>
+      </div>
+
+      <aside style="flex:1 1 300px;max-width:400px;position:sticky;top:16px;background:var(--color-text);color:var(--color-bg);border-radius:36px;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-3)">
+        <span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-2-300);font-weight:700">Liquidación · {{ emp }}</span>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <span style="font-size:13px;color:var(--color-neutral-400)">Total a pagar</span>
+          <span style="font-family:var(--font-body);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;font-size:44px;line-height:1.1">{{ hNeto }}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:14px">
+          <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--color-neutral-300)">Total horas</span><strong>{{ hTotal }}</strong></div>
+          <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--color-neutral-300)">Subtotal (horas × valor)</span><strong>{{ hBruto }}</strong></div>
+          <div style="height:1px;background:var(--color-neutral-800)"></div>
+          <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--color-accent-2-300)">Ingresos extra (+)</span><strong style="color:var(--color-accent-2-300)">{{ hSaldoFmt }}</strong></div>
+          <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:var(--color-accent-300)">Descuentos (−)</span><strong style="color:var(--color-accent-300)">{{ hDescFmt }}</strong></div>
+        </div>
+        <button class="btn btn-primary" onClick="{{ onGuardarHoras }}" style="min-height:52px;font-size:16px;margin-top:var(--space-2);color:var(--color-text)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><path d="M17 21v-8H7v8M7 3v5h8"></path></svg>
+          Guardar y ver liquidación
+        </button>
+      </aside>
+    </div>
+  </div>
+</sc-if>
+
+<!-- ═══ LIQUIDACIÓN PDF ═══ -->
+<sc-if value="{{ isLiq }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column;gap:var(--space-4)">
+    <div data-noprint="" style="display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-3)">
+      <div style="display:flex;flex-direction:column;gap:4px;margin-right:auto">
+        <span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-2-700);font-weight:700">Vista de impresión · A4</span>
+        <h2 style="margin:0;font-size:32px">Liquidación de {{ emp }}</h2>
+      </div>
+      <button class="btn btn-secondary" onClick="{{ goHoras }}" style="min-height:44px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7M19 12H5"></path></svg>
+        Editar horarios
+      </button>
+      <button class="btn btn-primary" onClick="{{ imprimir }}" style="min-height:44px;color:var(--color-text)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        Imprimir / Guardar PDF
+      </button>
+    </div>
+
+    <div data-sheetwrap="" style="background:var(--color-neutral-300);border-radius:36px;padding:clamp(12px,4vw,48px);overflow-x:auto">
+      <div data-sheet="" style="width:794px;min-height:1123px;margin:0 auto;box-sizing:border-box;padding:60px 64px 48px;background:var(--color-neutral-100);border-radius:12px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;gap:28px;font-size:13px;filter:{{ sheetFilter }}">
+        <div style="display:flex;align-items:center;gap:14px">
+          <img src="assets/img/logo.png" alt="Imperio" style="width:56px;height:56px;object-fit:contain;border-radius:50%;background:#fff">
+          <div style="display:flex;flex-direction:column;line-height:1.2;margin-right:auto">
+            <span style="font-family:var(--font-heading);font-size:18px">Imperio<span style="color:var(--color-accent)">.</span></span>
+            <span style="font-size:11px;color:var(--color-neutral-700)">Sistema de gestión</span>
+          </div>
+          <span class="tag tag-accent-2" style="font-size:12px;padding:6px 12px">Semana del {{ fechaDMY }}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <h1 style="margin:0;font-size:38px">Liquidación de jornales</h1>
+          <span style="font-size:14px;color:var(--color-neutral-700)">Control de horarios semanal</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          <div style="background:var(--color-surface);border-radius:18px;padding:12px 16px;display:flex;flex-direction:column;gap:2px"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700);font-weight:700">Empleado</span><span style="font-weight:700;font-size:15px">{{ emp }}</span></div>
+          <div style="background:var(--color-surface);border-radius:18px;padding:12px 16px;display:flex;flex-direction:column;gap:2px"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700);font-weight:700">Semana del</span><span style="font-weight:700;font-size:15px">{{ fechaDMY }}</span></div>
+          <div style="background:var(--color-surface);border-radius:18px;padding:12px 16px;display:flex;flex-direction:column;gap:2px"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700);font-weight:700">Fecha emisión</span><span style="font-weight:700;font-size:15px">{{ hoyDMY }}</span></div>
+        </div>
+        <div style="border-radius:20px;overflow:hidden;border:1px solid var(--color-neutral-300)">
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead>
+              <tr style="background:var(--color-accent-2-700);color:var(--color-neutral-100)">
+                <th style="text-align:left;padding:11px 18px;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Día</th>
+                <th style="text-align:center;padding:11px;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Entrada</th>
+                <th style="text-align:center;padding:11px;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Salida</th>
+                <th style="text-align:right;padding:11px 18px;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Total horas</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ horaRows }}" as="d" hint-placeholder-count="6">
+                <tr style="border-top:1px solid var(--color-neutral-300)">
+                  <td style="padding:10px 18px;font-weight:700">{{ d.label }} <span style="font-weight:400;color:var(--color-neutral-700)">{{ d.fecha }}</span></td>
+                  <td style="padding:10px;text-align:center;font-variant-numeric:tabular-nums">{{ d.eTxt }}</td>
+                  <td style="padding:10px;text-align:center;font-variant-numeric:tabular-nums">{{ d.sTxt }}</td>
+                  <td style="padding:10px 18px;text-align:right;font-weight:700;background:var(--color-accent-2-100);color:var(--color-accent-2-800)">{{ d.totalPdf }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+        <div style="align-self:flex-end;width:360px;background:var(--color-surface);border-radius:24px;padding:18px 22px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between"><span>Horas trabajadas</span><strong>{{ hTotal }}</strong></div>
+          <div style="display:flex;justify-content:space-between"><span>Valor hora</span><span>{{ valorHoraFmt }}</span></div>
+          <div style="display:flex;justify-content:space-between"><span>Subtotal horas</span><span>{{ hBruto2 }}</span></div>
+          <sc-if value="{{ hasHSaldo }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column"><div style="display:flex;justify-content:space-between"><span>(+) Ingresos extra</span><span>{{ hSaldo2 }}</span></div><span style="font-size:11px;font-style:italic;color:var(--color-neutral-700)">{{ hSaldoC }}</span></div>
+          </sc-if>
+          <sc-if value="{{ hasHDesc }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column"><div style="display:flex;justify-content:space-between"><span>(−) Descuentos / adelantos</span><span>− {{ hDesc2 }}</span></div><span style="font-size:11px;font-style:italic;color:var(--color-neutral-700)">{{ hDescC }}</span></div>
+          </sc-if>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid var(--color-text);margin-top:6px;padding-top:12px">
+            <span style="font-weight:700;letter-spacing:.04em">TOTAL A PAGAR</span>
+            <span style="font-family:var(--font-body);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;font-size:26px;color:var(--color-accent-700)">{{ hNeto2 }}</span>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-around;margin-top:36px">
+          <div style="width:200px;border-top:1.5px solid var(--color-text);padding-top:8px;text-align:center;display:flex;flex-direction:column"><strong style="font-size:12px">Firma empleado</strong><span style="font-size:12px">{{ emp }}</span></div>
+          <div style="width:200px;border-top:1.5px solid var(--color-text);padding-top:8px;text-align:center"><strong style="font-size:12px">Firma responsable</strong></div>
+        </div>
+        <div style="margin-top:auto;font-size:11px;color:var(--color-neutral-700)">Documento generado por el Sistema de Gestión.</div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<!-- ═══ REPORTE MENSUAL PDF ═══ -->
+<sc-if value="{{ isRep }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column;gap:var(--space-4)">
+    <div data-noprint="" style="display:flex;flex-direction:column;gap:var(--space-4)">
+      <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:var(--space-3)">
+        <div style="display:flex;flex-direction:column;gap:4px;margin-right:auto">
+          <span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-700);font-weight:700">Reportes · Exportar PDF</span>
+          <h2 style="margin:0;font-size:32px">Reporte mensual de cobranzas</h2>
+        </div>
+        <div class="field" style="width:170px"><label>Mes</label>
+          <select class="input" value="{{ mes }}" onChange="{{ onMes }}" style="min-height:44px">
+            <sc-for list="{{ meses }}" as="m" hint-placeholder-count="12"><option value="{{ m.v }}">{{ m.n }}</option></sc-for>
+          </select>
+        </div>
+        <div class="field" style="width:120px"><label>Año</label>
+          <select class="input" value="{{ anio }}" onChange="{{ onAnio }}" style="min-height:44px">
+            <option value="2025">2025</option><option value="2026">2026</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onClick="{{ imprimir }}" style="min-height:44px;color:var(--color-text)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          Imprimir / Guardar PDF
+        </button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <sc-for list="{{ repZonas }}" as="z" hint-placeholder-count="8">
+          <button onClick="{{ z.onClick }}" style="font:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:8px 16px;border-radius:999px;border:1.5px solid {{ z.bd }};background:{{ z.bg }};color:{{ z.fg }}">{{ z.name }}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div data-sheetwrap="" style="background:var(--color-neutral-300);border-radius:36px;padding:clamp(12px,4vw,48px);overflow-x:auto">
+      <div data-sheet="" style="width:794px;min-height:1123px;margin:0 auto;box-sizing:border-box;padding:60px 56px 48px;background:var(--color-neutral-100);border-radius:12px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;gap:26px;font-size:12px;filter:{{ sheetFilter }}">
+        <div style="display:flex;align-items:center;gap:14px">
+          <img src="assets/img/logo.png" alt="Imperio" style="width:56px;height:56px;object-fit:contain;border-radius:50%;background:#fff">
+          <div style="display:flex;flex-direction:column;line-height:1.2;margin-right:auto">
+            <span style="font-family:var(--font-heading);font-size:18px">Imperio<span style="color:var(--color-accent)">.</span></span>
+            <span style="font-size:11px;color:var(--color-neutral-700)">Sistema de gestión</span>
+          </div>
+          <span class="tag tag-accent" style="font-size:12px;padding:6px 12px">{{ periodo }}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <h1 style="margin:0;font-size:36px">Reporte mensual de cobranzas</h1>
+          <span style="font-size:14px;color:var(--color-neutral-700)">Periodo: {{ periodo }} · {{ repTitulo }}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          <div style="background:var(--color-surface);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:2px"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700);font-weight:700">Total bruto</span><span style="font-family:var(--font-body);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;font-size:22px">{{ rep.gBruto }}</span></div>
+          <div style="background:var(--color-surface);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:2px"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700);font-weight:700">Gastos</span><span style="font-family:var(--font-body);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;font-size:22px">{{ rep.gGastos }}</span></div>
+          <div style="background:var(--color-accent-2-100);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:2px"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-2-800);font-weight:700">Neto final</span><span style="font-family:var(--font-body);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;font-size:22px;color:var(--color-accent-2-800)">{{ rep.gNeto }}</span></div>
+        </div>
+        <div style="border-radius:20px;overflow:hidden;border:1px solid var(--color-neutral-300)">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums">
+            <thead>
+              <tr style="background:var(--color-text);color:var(--color-neutral-100)">
+                <th style="text-align:left;padding:11px 14px;font-size:10px;letter-spacing:.08em;text-transform:uppercase">{{ repCol }}</th>
+                <th style="text-align:right;padding:11px 10px;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Efectivo</th>
+                <th style="text-align:right;padding:11px 10px;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Transf.</th>
+                <th style="text-align:right;padding:11px 10px;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Total bruto</th>
+                <sc-if value="{{ showCom }}" hint-placeholder-val="{{ false }}"><th style="text-align:right;padding:11px 10px;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Comisión 6%</th></sc-if>
+                <th style="text-align:right;padding:11px 10px;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Gastos</th>
+                <th style="text-align:right;padding:11px 14px;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Neto final</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ rep.rows }}" as="r" hint-placeholder-count="7">
+                <tr style="border-top:1px solid var(--color-neutral-300)">
+                  <td style="padding:10px 14px;font-weight:700">{{ r.titulo }}</td>
+                  <td style="padding:10px;text-align:right">{{ r.ef }}</td>
+                  <td style="padding:10px;text-align:right">{{ r.tr }}</td>
+                  <td style="padding:10px;text-align:right;font-weight:700">{{ r.bruto }}</td>
+                  <sc-if value="{{ showCom }}" hint-placeholder-val="{{ false }}"><td style="padding:10px;text-align:right">{{ r.com }}</td></sc-if>
+                  <td style="padding:10px;text-align:right;color:var(--color-accent-700)">{{ r.gastos }}</td>
+                  <td style="padding:10px 14px;text-align:right;font-weight:700;background:var(--color-accent-2-100);color:var(--color-accent-2-800)">{{ r.neto }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+            <tfoot>
+              <tr style="border-top:2px solid var(--color-text);background:var(--color-surface);font-weight:700">
+                <td style="padding:12px 14px">TOTALES</td>
+                <td style="padding:12px 10px;text-align:right">{{ rep.gEf }}</td>
+                <td style="padding:12px 10px;text-align:right">{{ rep.gTr }}</td>
+                <td style="padding:12px 10px;text-align:right">{{ rep.gBruto }}</td>
+                <sc-if value="{{ showCom }}" hint-placeholder-val="{{ false }}"><td style="padding:12px 10px;text-align:right">{{ rep.gCom }}</td></sc-if>
+                <td style="padding:12px 10px;text-align:right">{{ rep.gGastos }}</td>
+                <td style="padding:12px 14px;text-align:right">{{ rep.gNeto }}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div style="margin-top:auto;display:flex;justify-content:space-between;font-size:11px;color:var(--color-neutral-700)">
+          <span>Generado el {{ ahora }} por daniel</span>
+          <span>Neto = bruto − (comisión 6% + saldo a favor)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+<!-- ═══ HISTORIAL (CALENDARIO) ═══ -->
+<sc-if value="{{ isHist }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column;gap:var(--space-6)">
+    <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:var(--space-4)">
+      <div style="display:flex;flex-direction:column;gap:6px;margin-right:auto;max-width:640px">
+        <span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-700);font-weight:700">Historial</span>
+        <h1 style="margin:0;font-size:44px">{{ hist.titulo }}</h1>
+        <p style="margin:0;font-size:16px;color:var(--color-neutral-700)">{{ hist.sub }}</p>
+      </div>
+      <div class="seg" style="background:var(--color-neutral-100)">
+        <label class="seg-opt" style="padding:10px 18px;font-size:14px;font-weight:600"><input type="radio" name="htipo" checked="{{ hist.isCob }}" onChange="{{ setTipoCob }}">Cobranzas</label>
+        <label class="seg-opt" style="padding:10px 18px;font-size:14px;font-weight:600"><input type="radio" name="htipo" checked="{{ hist.isHor }}" onChange="{{ setTipoHor }}">Jornales</label>
+      </div>
+      <div class="seg" style="background:var(--color-neutral-100)">
+        <label class="seg-opt" style="padding:10px 18px;font-size:14px;font-weight:600"><input type="radio" name="hvista" checked="{{ hist.isMes }}" onChange="{{ setVistaMes }}">Mes</label>
+        <label class="seg-opt" style="padding:10px 18px;font-size:14px;font-weight:600"><input type="radio" name="hvista" checked="{{ hist.isSem }}" onChange="{{ setVistaSem }}">Semanas</label>
+      </div>
+      <button class="btn btn-primary" onClick="{{ hist.onNueva }}" style="min-height:44px;color:var(--color-text)">+ {{ hist.nuevaLbl }}</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:var(--space-3)">
+      <sc-for list="{{ hist.kpis }}" as="k" hint-placeholder-count="4">
+        <div style="background:var(--color-surface);border-radius:28px;padding:var(--space-4) var(--space-6);display:flex;flex-direction:column;gap:2px">
+          <span style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--color-neutral-700)">{{ k.label }}</span>
+          <span style="font-family:var(--font-body);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;font-size:28px;line-height:1.2">{{ k.value }}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:var(--space-6);align-items:flex-start">
+      <section style="flex:1 1 640px;min-width:0;background:var(--color-neutral-100);border-radius:36px;padding:var(--space-6);box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:var(--space-4)">
+        <div style="display:flex;align-items:center;gap:var(--space-2)">
+          <button class="btn btn-secondary btn-icon" onClick="{{ hist.prev }}" aria-label="Mes anterior" style="width:44px;height:44px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+          </button>
+          <h2 style="margin:0 var(--space-2);font-size:30px;min-width:220px">{{ hist.mesLbl }}</h2>
+          <button class="btn btn-secondary btn-icon" onClick="{{ hist.next }}" aria-label="Mes siguiente" style="width:44px;height:44px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+          </button>
+          <button class="btn btn-secondary" onClick="{{ hist.hoy }}" style="margin-left:auto;min-height:44px">Hoy</button>
+        </div>
+
+        <sc-if value="{{ hist.isMes }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+            <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--color-neutral-700);padding:0 4px">
+              <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+            </div>
+            <sc-for list="{{ hist.weeks }}" as="w" hint-placeholder-count="5">
+              <div style="display:flex;flex-direction:column;gap:8px;padding:8px;border-radius:28px;background:{{ w.bg }}">
+                <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px">
+                  <sc-for list="{{ w.days }}" as="d" hint-placeholder-count="7">
+                    <div style="min-height:62px;border-radius:20px;padding:8px;display:flex;flex-direction:column;gap:4px;background:var(--color-bg);opacity:{{ d.op }}">
+                      <span style="width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;background:{{ d.numBg }};color:{{ d.numFg }}">{{ d.num }}</span>
+                      <span style="font-size:11px;font-weight:600;color:var(--color-accent-2-700);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.amt }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ w.hasItems }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;padding:0 2px 2px">
+                    <sc-for list="{{ w.items }}" as="it" hint-placeholder-count="5">
+                      <button onClick="{{ it.onClick }}" style="font:inherit;cursor:pointer;display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;border-radius:999px;border:0;background:{{ it.bg }};color:{{ it.fg }};box-shadow:var(--shadow-sm)">
+                        <span style="width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-family:var(--font-heading);font-size:12px;background:{{ it.dotBg }};color:{{ it.dotFg }}">{{ it.ini }}</span>
+                        <span style="font-size:13px;font-weight:700">{{ it.name }}</span>
+                        <span style="font-size:12px;font-weight:600;opacity:.8">{{ it.short }}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ hist.isSem }}" hint-placeholder-val="{{ false }}">
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:separate;border-spacing:6px;font-size:13px">
+              <thead>
+                <tr>
+                  <th style="text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700);padding:4px 8px">Semana</th>
+                  <sc-for list="{{ hist.cols }}" as="c" hint-placeholder-count="7">
+                    <th style="text-align:left;font-size:11px;letter-spacing:.04em;color:var(--color-neutral-700);padding:4px 8px;white-space:nowrap">{{ c }}</th>
+                  </sc-for>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ hist.semRows }}" as="r" hint-placeholder-count="4">
+                  <tr>
+                    <td style="padding:8px;white-space:nowrap;font-weight:700">{{ r.label }}</td>
+                    <sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="7">
+                      <td style="padding:0">
+                        <button onClick="{{ c.onClick }}" style="font:inherit;cursor:pointer;width:100%;min-width:92px;min-height:56px;border:0;border-radius:20px;padding:8px 12px;text-align:left;display:flex;flex-direction:column;gap:2px;background:{{ c.bg }};color:{{ c.fg }}">
+                          <span style="font-size:13px;font-weight:700">{{ c.short }}</span>
+                          <span style="font-size:11px;opacity:.8">{{ c.sub }}</span>
+                        </button>
+                      </td>
+                    </sc-for>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ hist.empty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:var(--space-6);text-align:left;color:var(--color-neutral-700);font-size:15px">No hay liquidaciones registradas en este mes.</div>
+        </sc-if>
+      </section>
+
+      <aside style="flex:1 1 300px;max-width:400px;position:sticky;top:16px;background:var(--color-text);color:var(--color-bg);border-radius:36px;padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-3)">
+        <sc-if value="{{ sel.has }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+            <span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300);font-weight:700">{{ sel.kicker }}</span>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <h3 style="margin:0;font-size:28px">{{ sel.name }}</h3>
+              <span style="font-size:13px;color:var(--color-neutral-400)">Semana del {{ sel.semana }}</span>
+            </div>
+            <span style="font-family:var(--font-body);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;font-size:42px;line-height:1.1">{{ sel.total }}</span>
+            <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+              <sc-for list="{{ sel.days }}" as="d" hint-placeholder-count="6">
+                <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:var(--color-neutral-300)">{{ d.k }}</span><span style="font-weight:600;text-align:right">{{ d.v }}</span></div>
+              </sc-for>
+              <div style="height:1px;background:var(--color-neutral-800);margin:4px 0"></div>
+              <sc-for list="{{ sel.lines }}" as="l" hint-placeholder-count="3">
+                <div style="display:flex;justify-content:space-between;gap:10px"><span style="color:var(--color-accent-2-300)">{{ l.k }}</span><strong>{{ l.v }}</strong></div>
+              </sc-for>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--space-2)">
+              <button class="btn btn-primary" onClick="{{ sel.onVer }}" style="flex:1 1 auto;min-height:48px;color:var(--color-text)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4M16 13H8M16 17H8"></path></svg>
+                {{ sel.verLbl }}
+              </button>
+              <sc-if value="{{ sel.isHor }}" hint-placeholder-val="{{ false }}">
+                <button class="btn" onClick="{{ sel.onEditar }}" style="min-height:48px;color:var(--color-bg);border-color:var(--color-neutral-700)">Editar</button>
+              </sc-if>
+              <button class="btn" onClick="{{ sel.onEliminar }}" style="min-height:48px;color:var(--color-accent-300);border-color:var(--color-accent-800)">Eliminar</button>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ sel.none }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+            <span style="width:56px;height:56px;border-radius:50%;background:var(--color-neutral-800);display:grid;place-items:center;color:var(--color-accent-300)">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>
+            </span>
+            <h3 style="margin:0;font-size:24px">Elegí un cierre</h3>
+            <p style="margin:0;font-size:14px;color:var(--color-neutral-400)">Tocá cualquier {{ hist.itemLbl }} del calendario para ver el detalle, abrir el PDF o eliminarlo.</p>
+          </div>
+        </sc-if>
+      </aside>
+    </div>
+  </div>
+</sc-if>
+
+<!-- ═══ LIQUIDACIÓN DE COBRANZA PDF ═══ -->
+<sc-if value="{{ isCierre }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column;gap:var(--space-4)">
+    <div data-noprint="" style="display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-3)">
+      <div style="display:flex;flex-direction:column;gap:4px;margin-right:auto">
+        <span style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-700);font-weight:700">Vista de impresión · A4</span>
+        <h2 style="margin:0;font-size:32px">Cierre de {{ ci.zona }}</h2>
+      </div>
+      <button class="btn btn-secondary" onClick="{{ goHist }}" style="min-height:44px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7M19 12H5"></path></svg>
+        Volver al historial
+      </button>
+      <button class="btn btn-primary" onClick="{{ imprimir }}" style="min-height:44px;color:var(--color-text)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        Imprimir / Guardar PDF
+      </button>
+    </div>
+    <div data-sheetwrap="" style="background:var(--color-neutral-300);border-radius:36px;padding:clamp(12px,4vw,48px);overflow-x:auto">
+      <div data-sheet="" style="width:794px;min-height:1123px;margin:0 auto;box-sizing:border-box;padding:56px 56px 44px;background:var(--color-neutral-100);border-radius:12px;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;gap:24px;font-size:12px;filter:{{ sheetFilter }}">
+        <div style="display:flex;align-items:center;gap:14px">
+          <img src="assets/img/logo.png" alt="Imperio" style="width:56px;height:56px;object-fit:contain;border-radius:50%;background:#fff">
+          <div style="display:flex;flex-direction:column;line-height:1.2;margin-right:auto">
+            <span style="font-family:var(--font-heading);font-size:18px">Imperio<span style="color:var(--color-accent)">.</span></span>
+            <span style="font-size:11px;color:var(--color-neutral-700)">Sistema de gestión</span>
+          </div>
+          <span class="tag tag-accent" style="font-size:12px;padding:6px 12px">{{ ci.zona }}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <h1 style="margin:0;font-size:34px">Liquidación semanal de cobranza</h1>
+          <span style="font-size:14px;color:var(--color-neutral-700)">Gestión de zona: <strong>{{ ci.zona }}</strong></span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          <div style="background:var(--color-surface);border-radius:18px;padding:12px 16px;display:flex;flex-direction:column;gap:2px"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700);font-weight:700">Semana del</span><span style="font-weight:700;font-size:15px">{{ ci.semana }}</span></div>
+          <div style="background:var(--color-surface);border-radius:18px;padding:12px 16px;display:flex;flex-direction:column;gap:2px"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700);font-weight:700">Fecha emisión</span><span style="font-weight:700;font-size:15px">{{ hoyDMY }}</span></div>
+          <div style="background:var(--color-surface);border-radius:18px;padding:12px 16px;display:flex;flex-direction:column;gap:2px"><span style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700);font-weight:700">Usuario</span><span style="font-weight:700;font-size:15px">daniel</span></div>
+        </div>
+        <div style="border-radius:20px;overflow:hidden;border:1px solid var(--color-neutral-300)">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums">
+            <thead>
+              <tr style="background:var(--color-text);color:var(--color-neutral-100)">
+                <th style="text-align:left;padding:11px 14px;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Día</th>
+                <th style="text-align:right;padding:11px 10px;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Efectivo</th>
+                <th style="text-align:right;padding:11px 10px;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Transf.</th>
+                <th style="text-align:right;padding:11px 10px;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Total</th>
+                <th style="text-align:right;padding:11px 10px;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Gastos</th>
+                <th style="text-align:left;padding:11px 14px;font-size:10px;letter-spacing:.08em;text-transform:uppercase">Detalle gasto</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ ci.rows }}" as="r" hint-placeholder-count="6">
+                <tr style="border-top:1px solid var(--color-neutral-300)">
+                  <td style="padding:10px 14px;font-weight:700">{{ r.dia }}</td>
+                  <td style="padding:10px;text-align:right">{{ r.ef }}</td>
+                  <td style="padding:10px;text-align:right">{{ r.tr }}</td>
+                  <td style="padding:10px;text-align:right;font-weight:700">{{ r.sub }}</td>
+                  <td style="padding:10px;text-align:right;color:var(--color-accent-700)">{{ r.gm }}</td>
+                  <td style="padding:10px 14px;font-style:italic;color:var(--color-neutral-700)">{{ r.gc }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+            <tfoot>
+              <tr style="border-top:2px solid var(--color-text);background:var(--color-surface);font-weight:700">
+                <td style="padding:12px 14px">TOTALES</td>
+                <td style="padding:12px 10px;text-align:right">{{ ci.tEf }}</td>
+                <td style="padding:12px 10px;text-align:right">{{ ci.tTr }}</td>
+                <td style="padding:12px 10px;text-align:right">{{ ci.tTot }}</td>
+                <td style="padding:12px 10px;text-align:right">{{ ci.tGm }}</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div style="background:var(--color-surface);border-radius:24px;padding:18px 20px;display:flex;flex-direction:column;gap:8px">
+            <span style="font-family:var(--font-heading);font-size:16px">Liquidación cobrador</span>
+            <div style="display:flex;justify-content:space-between"><span>(+) Comisión (6%)</span><span>{{ ci.com }}</span></div>
+            <div style="display:flex;justify-content:space-between"><span>(+) Saldo a favor</span><span>{{ ci.saldo }}</span></div>
+            <div style="display:flex;justify-content:space-between"><span>(−) Desc. gastos</span><span>− {{ ci.tGm }}</span></div>
+            <div style="display:flex;justify-content:space-between"><span>(−) Desc. créditos</span><span>− {{ ci.desc }}</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid var(--color-text);margin-top:4px;padding-top:10px"><strong>A COBRAR</strong><span style="font-family:var(--font-body);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;font-size:22px">{{ ci.sueldo }}</span></div>
+          </div>
+          <div style="background:var(--color-accent-2-100);border-radius:24px;padding:18px 20px;display:flex;flex-direction:column;gap:8px;color:var(--color-accent-2-900)">
+            <span style="font-family:var(--font-heading);font-size:16px">Neto a rendir (empresa)</span>
+            <div style="display:flex;justify-content:space-between"><span>Total cobranza bruta</span><strong>{{ ci.tTot }}</strong></div>
+            <div style="display:flex;justify-content:space-between"><span>(−) Comisión (6%)</span><span>− {{ ci.com }}</span></div>
+            <div style="display:flex;justify-content:space-between"><span>(−) Saldo a favor</span><span>− {{ ci.saldo }}</span></div>
+            <div style="display:flex;justify-content:space-between"><span>(+) Retención créditos</span><span>+ {{ ci.desc }}</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;border-top:2px solid var(--color-accent-2-800);margin-top:4px;padding-top:10px"><strong>TOTAL FINAL</strong><span style="font-family:var(--font-body);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;font-size:22px">{{ ci.neto }}</span></div>
+          </div>
+        </div>
+        <span style="font-size:11px;font-style:italic;color:var(--color-neutral-700)">* Los gastos fueron descontados del sueldo del cobrador.</span>
+        <div style="display:flex;justify-content:center;margin-top:48px">
+          <div style="width:240px;border-top:1.5px solid var(--color-text);padding-top:8px;text-align:center"><strong style="font-size:12px">Firma administración</strong></div>
+        </div>
+        <div style="margin-top:auto;font-size:11px;color:var(--color-neutral-700)">Documento generado por el Sistema de Gestión.</div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+</main>
+
+<sc-if value="{{ confirmOpen }}" hint-placeholder-val="{{ false }}">
+  <div class="dialog-backdrop" data-noprint="" onClick="{{ closeConfirm }}" style="z-index:60">
+    <div class="dialog" onClick="{{ stop }}">
+      <span style="width:52px;height:52px;border-radius:50%;background:var(--color-accent-200);color:var(--color-accent-800);display:grid;place-items:center">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+      </span>
+      <div class="dialog-title">¿Eliminar liquidación?</div>
+      <div class="dialog-body">Esta acción es <strong>permanente</strong> y no se puede deshacer. Se eliminarán todos los detalles asociados a este cierre.</div>
+      <div class="dialog-actions">
+        <button class="btn btn-secondary" onClick="{{ closeConfirm }}" style="min-height:44px">Cancelar</button>
+        <button class="btn btn-primary" onClick="{{ doDelete }}" style="min-height:44px;color:var(--color-text)">Sí, eliminar</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+  <div data-noprint="" style="position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:50">
+    <div style="display:flex;align-items:center;gap:10px;background:var(--color-accent-2-700);color:var(--color-neutral-100);padding:12px 22px 12px 14px;border-radius:999px;box-shadow:var(--shadow-lg);font-weight:600;animation:toastIn .25s ease">
+      <span style="width:26px;height:26px;border-radius:50%;background:var(--color-accent-2-200);color:var(--color-accent-2-800);display:grid;place-items:center">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+      </span>
+      {{ toast }}
+    </div>
+  </div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;pdfTinta&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;color&quot;,&quot;byn&quot;],&quot;default&quot;:&quot;color&quot;,&quot;tsType&quot;:&quot;'color'|'byn'&quot;,&quot;section&quot;:&quot;PDF&quot;},&quot;mostrarComision&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;PDF&quot;}}">
+const DIAS=['LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO'];
+const DIAS_LBL=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const ZONAS=['Zona Este','Zona Norte','Zona Sur','Zona Sgo','Leales','Catamarca','Tafi del Valle'];
+const EMPLEADOS=['Alejandro','Lourdes','Maxi','Cristian','Nahuel'];
+const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const ars0=new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0});
+const ars2=new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',minimumFractionDigits:2});
+const num2=new Intl.NumberFormat('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const n=v=>parseFloat(v)||0;
+const pad=x=>String(x).padStart(2,'0');
+const parse=iso=>{const [y,m,d]=(iso||'').split('-').map(Number);return new Date(y||2026,(m||1)-1,d||1);};
+const addDays=(iso,k)=>{const d=parse(iso);d.setDate(d.getDate()+k);return d;};
+const dm=d=>pad(d.getDate())+'/'+pad(d.getMonth()+1);
+const dmy=d=>dm(d)+'/'+d.getFullYear();
+const monday=()=>{const d=new Date();const off=(d.getDay()+6)%7;d.setDate(d.getDate()-off);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());};
+const mins=(e,s)=>{if(!e||!s)return 0;const [a,b]=e.split(':').map(Number),[c,d]=s.split(':').map(Number);let x=(c*60+d)-(a*60+b);if(x<0)x+=1440;return x;};
+const hm=m=>Math.floor(m/60)+'h '+(m%60)+'m';
+const hash=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))|0;return Math.abs(h);};
+const rnd=(s,a,b)=>Math.round((a+hash(s)%(b-a))/100)*100;
+const isoOf=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const short=v=>v>=1e6?'$ '+(v/1e6).toFixed(2).replace('.',',')+' M':v>=1e3?'$ '+Math.round(v/1e3)+' mil':ars0.format(v);
+const CONCEPTOS=['Nafta','Viáticos','Repuesto moto','Nafta'];
+
+class Component extends DCLogic {
+  state={
+    screen:'cargar',zona:'Zona Este',fecha:monday(),modo:'semanal',
+    cob:{LUNES:{ef:'84500',tr:'32000',gm:'6000',gc:'Nafta'},MARTES:{ef:'71200',tr:'45800',gm:'',gc:''},MIERCOLES:{ef:'',tr:'',gm:'',gc:''},JUEVES:{ef:'',tr:'',gm:'',gc:''},VIERNES:{ef:'',tr:'',gm:'',gc:''},SABADO:{ef:'',tr:'',gm:'',gc:''}},
+    diaSel:'LUNES',diario:{ef:'',tr:'',gm:'',gc:''},
+    saldo:'',saldoC:'',desc:'',descC:'',
+    emp:'Lourdes',valorHora:'3500',
+    horas:{LUNES:{e:'08:00',s:'16:30'},MARTES:{e:'08:00',s:'16:00'},MIERCOLES:{e:'08:30',s:'17:00'},JUEVES:{e:'',s:''},VIERNES:{e:'',s:''},SABADO:{e:'09:00',s:'13:00'}},
+    hSaldo:'15000',hSaldoC:'Bono presentismo',hDesc:'',hDescC:'',
+    histTipo:'cob',histVista:'mes',histY:new Date().getFullYear(),histM:new Date().getMonth(),histSel:null,cierreSel:null,confirmOpen:false,deleted:{},
+    toast:null,mes:String(new Date().getMonth()+1).padStart(2,'0'),anio:String(new Date().getFullYear()),repZona:'todas'
+  };
+  set=(k)=>e=>this.setState({[k]:e.target.value});
+  setCob=(d,f)=>e=>{const v=e.target.value;this.setState(s=>({cob:{...s.cob,[d]:{...s.cob[d],[f]:v}}}));};
+  setDia=f=>e=>{const v=e.target.value;this.setState(s=>({diario:{...s.diario,[f]:v}}));};
+  setHora=(d,f)=>e=>{const v=e.target.value;this.setState(s=>({horas:{...s.horas,[d]:{...s.horas[d],[f]:v}}}));};
+  showToast(t){this.setState({toast:t});clearTimeout(this._t);this._t=setTimeout(()=>this.setState({toast:null}),2600);}
+  componentWillUnmount(){clearTimeout(this._t);}
+  chip(active){return active?{bg:'var(--color-accent)',fg:'var(--color-text)',bd:'var(--color-accent)'}:{bg:'var(--color-neutral-100)',fg:'var(--color-text)',bd:'var(--color-neutral-300)'};}
+
+  histItems(y,m,tipo){
+    const out=[],today=new Date(),d=new Date(y,m,1);
+    while(d.getDay()!==1)d.setDate(d.getDate()+1);
+    while(d.getMonth()===m){
+      if(d<=today){const iso=isoOf(d);
+        if(tipo==='cob')ZONAS.forEach(z=>{const k=z+iso;
+          const days=DIAS.map((dd,i)=>{const g=hash(k+i+'x')%4===0;return {ef:rnd(k+i+'e',8000,48000),tr:rnd(k+i+'t',4000,30000),gm:g?rnd(k+i+'g',2000,9000):0,gc:g?CONCEPTOS[hash(k+i)%4]:''};});
+          const tot=days.reduce((a,x)=>a+x.ef+x.tr,0);
+          out.push({id:'c'+k,tipo,name:z,iso,days,total:tot,saldo:hash(k+'s')%3===0?rnd(k+'sf',3000,15000):0,desc:hash(k+'d')%4===0?rnd(k+'dc',5000,20000):0});});
+        else EMPLEADOS.forEach(e=>{const k=e+iso;const horas={};let mt=0;
+          DIAS.forEach((dd,i)=>{const off=hash(k+i)%7===0;const ent=hash(k+i+'e')%2?'08:00':'08:30';const sal=i===5?'13:00':(['16:00','16:30','17:00'][hash(k+i+'s')%3]);
+            horas[dd]=off?{e:'',s:''}:{e:ent,s:sal};mt+=off?0:mins(ent,sal);});
+          const vh=3500;out.push({id:'h'+k,tipo,name:e,iso,horas,mins:mt,vh,total:mt/60*vh});});
+      }
+      d.setDate(d.getDate()+7);
+    }
+    return out.filter(it=>!this.state.deleted[it.id]);
+  }
+
+  buildHist(){
+    const s=this.state,y=s.histY,m=s.histM,isCob=s.histTipo==='cob';
+    const items=this.histItems(y,m,s.histTipo);
+    const max=Math.max(1,...items.map(i=>i.total));
+    const pick=it=>()=>this.setState({histSel:it.id});
+    const today=new Date();const tIso=isoOf(today);
+    const start=new Date(y,m,1);while(start.getDay()!==1)start.setDate(start.getDate()-1);
+    const last=new Date(y,m+1,0);const weeks=[];
+    for(const w=new Date(start);w<=last;w.setDate(w.getDate()+7)){
+      const wIso=isoOf(w);const wi=items.filter(i=>i.iso===wIso);
+      const days=[];for(let i=0;i<7;i++){const dd=new Date(w);dd.setDate(w.getDate()+i);const inM=dd.getMonth()===m;const isT=isoOf(dd)===tIso;
+        let amt=0;if(i<6)wi.forEach(it=>{amt+=isCob?it.days[i].ef+it.days[i].tr:mins(it.horas[DIAS[i]].e,it.horas[DIAS[i]].s);});
+        days.push({num:dd.getDate(),op:inM?1:.4,numBg:isT?'var(--color-accent)':'transparent',numFg:'var(--color-text)',amt:amt?(isCob?short(amt):Math.round(amt/60)+' h'):''});}
+      const hasSel=wi.some(i=>i.id===s.histSel);
+      weeks.push({days,hasItems:wi.length>0,bg:hasSel?'var(--color-accent-100)':'var(--color-surface)',
+        items:wi.map(it=>{const a=it.id===s.histSel;return {name:it.name,ini:it.name[0],short:isCob?short(it.total):hm(it.mins),onClick:pick(it),
+          bg:a?'var(--color-accent)':'var(--color-neutral-100)',fg:'var(--color-text)',dotBg:a?'var(--color-text)':(isCob?'var(--color-accent-200)':'var(--color-accent-2-300)'),dotFg:a?'var(--color-bg)':(isCob?'var(--color-accent-800)':'var(--color-accent-2-900)')};})});
+    }
+    const names=isCob?ZONAS:EMPLEADOS;
+    const mondays=[...new Set(items.map(i=>i.iso))];
+    const steps=['var(--color-accent-2-100)','var(--color-accent-2-200)','var(--color-accent-2-300)','var(--color-accent-2-400)'];
+    const semRows=mondays.map(iso=>({label:'Semana '+dm(parse(iso)),cells:names.map(nm=>{const it=items.find(i=>i.iso===iso&&i.name===nm);
+      if(!it)return {short:'–',sub:'',bg:'var(--color-bg)',fg:'var(--color-neutral-600)',onClick:()=>{}};
+      const a=it.id===s.histSel;return {short:isCob?short(it.total):hm(it.mins),sub:isCob?'cobrado':short(it.total),onClick:pick(it),
+        bg:a?'var(--color-accent)':steps[Math.min(3,Math.floor(it.total/max*4))],fg:a?'var(--color-text)':'var(--color-accent-2-900)'};})}));
+    const tot=items.reduce((a,i)=>a+i.total,0);
+    const kpis=isCob?[{label:'Cierres del mes',value:String(items.length)},{label:'Total recaudado',value:short(tot)},{label:'Mejor semana',value:short(items.length?max:0)},{label:'Promedio semanal',value:short(items.length?tot/items.length:0)}]
+      :[{label:'Liquidaciones',value:String(items.length)},{label:'Horas totales',value:Math.round(items.reduce((a,i)=>a+i.mins,0)/60)+' h'},{label:'Total liquidado',value:short(tot)},{label:'Promedio',value:short(items.length?tot/items.length:0)}];
+    const mv=k=>()=>this.setState(st=>{const d=new Date(st.histY,st.histM+k,1);return {histY:d.getFullYear(),histM:d.getMonth(),histSel:null};});
+    return {items,hist:{titulo:isCob?'Historial de liquidaciones':'Historial de horas',sub:isCob?'Cobranzas registradas por semana y zona.':'Liquidaciones de jornales por semana y empleado.',
+      isCob,isHor:!isCob,isMes:s.histVista==='mes',isSem:s.histVista==='sem',nuevaLbl:isCob?'Nueva carga':'Nueva liquidación',itemLbl:isCob?'zona':'empleado',
+      onNueva:()=>this.setState({screen:isCob?'cargar':'horas'}),kpis,mesLbl:MESES[m]+' '+y,prev:mv(-1),next:mv(1),
+      hoy:()=>this.setState({histY:today.getFullYear(),histM:today.getMonth()}),weeks,cols:names,semRows,empty:items.length===0}};
+  }
+
+  buildSel(items){
+    const s=this.state;const it=items.find(i=>i.id===s.histSel);
+    if(!it)return {has:false,none:true};
+    const isCob=it.tipo==='cob';
+    const days=DIAS.map((d,i)=>isCob?{k:DIAS_LBL[i],v:ars0.format(it.days[i].ef+it.days[i].tr)}:{k:DIAS_LBL[i],v:it.horas[d].e?it.horas[d].e+'–'+it.horas[d].s+' · '+hm(mins(it.horas[d].e,it.horas[d].s)):'—'});
+    const ef=isCob?it.days.reduce((a,x)=>a+x.ef,0):0,tr=isCob?it.days.reduce((a,x)=>a+x.tr,0):0,gm=isCob?it.days.reduce((a,x)=>a+x.gm,0):0;
+    const toLiq=scr=>()=>this.setState({screen:scr,emp:it.name,fecha:it.iso,valorHora:String(it.vh),horas:it.horas,hSaldo:'',hSaldoC:'',hDesc:'',hDescC:''});
+    return {has:true,none:false,isHor:!isCob,kicker:isCob?'Cierre de cobranza':'Liquidación de jornales',name:it.name,semana:dmy(parse(it.iso)),
+      total:isCob?ars0.format(it.total):ars0.format(it.total),days,
+      lines:isCob?[{k:'Efectivo',v:ars0.format(ef)},{k:'Transferencia',v:ars0.format(tr)},{k:'Gastos',v:ars0.format(gm)},{k:'Comisión 6%',v:ars0.format(it.total*0.06)}]
+        :[{k:'Horas',v:hm(it.mins)},{k:'Valor hora',v:ars0.format(it.vh)}],
+      verLbl:isCob?'Ver liquidación':'Ver recibo',
+      onVer:isCob?()=>this.setState({screen:'cierre',cierreSel:it}):toLiq('liq'),onEditar:toLiq('horas'),
+      onEliminar:()=>this.setState({confirmOpen:true})};
+  }
+
+  buildCierre(){
+    const it=this.state.cierreSel;if(!it)return {zona:'',rows:[]};
+    let ef=0,tr=0,gm=0;
+    const rows=it.days.map((x,i)=>{ef+=x.ef;tr+=x.tr;gm+=x.gm;return {dia:DIAS_LBL[i],ef:ars2.format(x.ef),tr:ars2.format(x.tr),sub:ars2.format(x.ef+x.tr),gm:x.gm?ars2.format(x.gm):'–',gc:x.gc};});
+    const tot=ef+tr,com=tot*0.06;
+    return {zona:it.name,semana:dmy(parse(it.iso)),rows,tEf:ars2.format(ef),tTr:ars2.format(tr),tTot:ars2.format(tot),tGm:ars2.format(gm),
+      com:ars2.format(com),saldo:ars2.format(it.saldo),desc:ars2.format(it.desc),
+      sueldo:ars2.format((com+it.saldo)-(gm+it.desc)),neto:ars2.format(tot-(com+it.saldo)+it.desc)};
+  }
+
+  buildReport(){
+    const {mes,anio,repZona}=this.state;const m=Number(mes),y=Number(anio);
+    let rows=[];
+    if(repZona==='todas'){
+      rows=ZONAS.map(z=>({titulo:z,ef:rnd(z+mes+anio+'e',380000,920000),tr:rnd(z+mes+anio+'t',200000,700000),g:rnd(z+mes+anio+'g',15000,90000),sf:hash(z+mes)%3?rnd(z+anio+'s',5000,40000):0}));
+    } else {
+      const d=new Date(y,m-1,1);while(d.getDay()!==1)d.setDate(d.getDate()+1);
+      while(d.getMonth()===m-1){const k=repZona+dmy(d);rows.push({titulo:dmy(d),ef:rnd(k+'e',90000,240000),tr:rnd(k+'t',50000,180000),g:rnd(k+'g',3000,25000),sf:hash(k)%3?0:rnd(k+'s',2000,12000)});d.setDate(d.getDate()+7);}
+    }
+    const G={ef:0,tr:0,b:0,c:0,g:0,n:0};
+    const out=rows.map(r=>{const b=r.ef+r.tr,c=b*0.06,ne=b-(c+r.sf);G.ef+=r.ef;G.tr+=r.tr;G.b+=b;G.c+=c;G.g+=r.g;G.n+=ne;
+      return {titulo:r.titulo,ef:num2.format(r.ef),tr:num2.format(r.tr),bruto:num2.format(b),com:num2.format(c),gastos:num2.format(r.g),neto:num2.format(ne)};});
+    return {rows:out,gEf:num2.format(G.ef),gTr:num2.format(G.tr),gBruto:num2.format(G.b),gCom:num2.format(G.c),gGastos:num2.format(G.g),gNeto:num2.format(G.n)};
+  }
+
+  renderVals(){
+    const s=this.state,p=this.props;
+    const go=k=>()=>this.setState({screen:k});
+    const navDef=[['Dashboard',null],['Cargar','cargar'],['Jornales','horas'],['Historial','hist','cob'],['Hist. Horas','hist','hor'],['Reportes','rep']];
+    const nav=navDef.map(([label,k,t])=>{
+      const a=t?((s.screen==='hist'&&s.histTipo===t)||(t==='cob'&&s.screen==='cierre')||(t==='hor'&&s.screen==='liq')):k===s.screen;
+      return {label,onClick:k?()=>this.setState(t?{screen:k,histTipo:t,histSel:null}:{screen:k}):()=>{},bg:a?'var(--color-text)':'transparent',fg:a?'var(--color-bg)':(k?'var(--color-text)':'var(--color-neutral-600)')};});
+    const H=this.buildHist();
+
+    const cobRows=DIAS.map((d,i)=>({label:DIAS_LBL[i],short:DIAS_LBL[i].slice(0,2),fecha:dm(addDays(s.fecha,i)),...s.cob[d],
+      onEf:this.setCob(d,'ef'),onTr:this.setCob(d,'tr'),onGm:this.setCob(d,'gm'),onGc:this.setCob(d,'gc')}));
+    let ef=0,tr=0,gm=0;
+    if(s.modo==='semanal'){DIAS.forEach(d=>{ef+=n(s.cob[d].ef);tr+=n(s.cob[d].tr);gm+=n(s.cob[d].gm);});}
+    else{ef=n(s.diario.ef);tr=n(s.diario.tr);gm=n(s.diario.gm);}
+    const selIdx=DIAS.indexOf(s.diaSel);
+
+    let tot=0;
+    const horaRows=DIAS.map((d,i)=>{const h=s.horas[d];const m=mins(h.e,h.s);tot+=m;
+      const st=h.e?(()=>{const [a,b]=h.e.split(':').map(Number);return a*60+b;})():0;
+      return {label:DIAS_LBL[i],short:DIAS_LBL[i].slice(0,2),fecha:dm(addDays(s.fecha,i)),e:h.e,s:h.s,eTxt:h.e||'–',sTxt:h.s||'–',
+        total:hm(m),totalPdf:m?hm(m):'–',pillBg:m?'var(--color-accent-2-600)':'var(--color-neutral-200)',pillFg:m?'var(--color-neutral-100)':'var(--color-neutral-600)',
+        barL:(st/1440*100)+'%',barW:(m?Math.min(m,1440-st)/1440*100:0)+'%',onE:this.setHora(d,'e'),onS:this.setHora(d,'s')};});
+    const vh=n(s.valorHora),bruto=tot/60*vh,neto=bruto+n(s.hSaldo)-n(s.hDesc);
+    const now=new Date();
+
+    return {
+      nav,isCargar:s.screen==='cargar',isHoras:s.screen==='horas',isLiq:s.screen==='liq',isRep:s.screen==='rep',
+      zona:s.zona,zonas:ZONAS.map(z=>({name:z,onClick:()=>this.setState({zona:z}),...this.chip(z===s.zona)})),
+      fecha:s.fecha,onFecha:this.set('fecha'),
+      semanaLabel:'Semana del '+dm(addDays(s.fecha,0))+' al '+dmy(addDays(s.fecha,5)),
+      isSemanal:s.modo==='semanal',isDiario:s.modo==='diario',
+      setSemanal:()=>this.setState({modo:'semanal'}),setDiario:()=>this.setState({modo:'diario'}),
+      cobRows,
+      diaPicker:DIAS.map((d,i)=>{const a=d===s.diaSel;return {short:DIAS_LBL[i].slice(0,2),fecha:dm(addDays(s.fecha,i)),onClick:()=>this.setState({diaSel:d}),bg:a?'var(--color-accent)':'var(--color-surface)',fg:'var(--color-text)'};}),
+      fechaPago:DIAS_LBL[selIdx]+' '+dmy(addDays(s.fecha,selIdx)),
+      diario:s.diario,onDiaEf:this.setDia('ef'),onDiaTr:this.setDia('tr'),onDiaGm:this.setDia('gm'),onDiaGc:this.setDia('gc'),
+      saldo:s.saldo,saldoC:s.saldoC,desc:s.desc,descC:s.descC,
+      onSaldo:this.set('saldo'),onSaldoC:this.set('saldoC'),onDesc:this.set('desc'),onDescC:this.set('descC'),
+      cobEf:ars0.format(ef),cobTr:ars0.format(tr),cobGm:ars0.format(gm),cobTotal:ars0.format(ef+tr),
+      saldoFmt:ars0.format(n(s.saldo)),descFmt:ars0.format(n(s.desc)),
+      onGuardarCob:()=>this.showToast('¡Datos guardados correctamente!'),
+
+      emp:s.emp,empleados:EMPLEADOS.map(e=>({name:e,ini:e[0],onClick:()=>this.setState({emp:e}),...this.chip(e===s.emp)})),
+      valorHora:s.valorHora,onValorHora:this.set('valorHora'),
+      copiarLunes:()=>this.setState(st=>{const l=st.horas.LUNES;const h={};DIAS.forEach(d=>h[d]=d==='SABADO'?st.horas[d]:{...l});return {horas:h};}),
+      horaRows,
+      hSaldo:s.hSaldo,hSaldoC:s.hSaldoC,hDesc:s.hDesc,hDescC:s.hDescC,
+      onHSaldo:this.set('hSaldo'),onHSaldoC:this.set('hSaldoC'),onHDesc:this.set('hDesc'),onHDescC:this.set('hDescC'),
+      hTotal:hm(tot),hBruto:ars0.format(bruto),hNeto:ars0.format(neto),hSaldoFmt:ars0.format(n(s.hSaldo)),hDescFmt:ars0.format(n(s.hDesc)),
+      onGuardarHoras:()=>{this.setState({screen:'liq'});this.showToast('¡Liquidación guardada correctamente!');},
+
+      goHoras:go('horas'),imprimir:()=>window.print(),
+      fechaDMY:dmy(parse(s.fecha)),hoyDMY:dmy(now),
+      valorHoraFmt:ars2.format(vh),hBruto2:ars2.format(bruto),hNeto2:ars2.format(neto),
+      hasHSaldo:n(s.hSaldo)>0,hasHDesc:n(s.hDesc)>0,hSaldo2:ars2.format(n(s.hSaldo)),hDesc2:ars2.format(n(s.hDesc)),
+      sheetFilter:(p.pdfTinta??'color')==='byn'?'grayscale(1)':'none',
+
+      meses:MESES.map((m,i)=>({v:pad(i+1),n:m})),mes:s.mes,anio:s.anio,onMes:this.set('mes'),onAnio:this.set('anio'),
+      repZonas:['todas',...ZONAS].map(z=>({name:z==='todas'?'Todas las zonas':z,onClick:()=>this.setState({repZona:z}),...this.chip(z===s.repZona)})),
+      periodo:MESES[Number(s.mes)-1]+' '+s.anio,
+      repTitulo:s.repZona==='todas'?'Consolidado general · Todas las zonas':'Reporte detallado · '+s.repZona,
+      repCol:s.repZona==='todas'?'Zona':'Semana del',
+      rep:this.buildReport(),showCom:p.mostrarComision??true,
+      ahora:dmy(now)+' '+pad(now.getHours())+':'+pad(now.getMinutes()),
+      hasToast:!!s.toast,toast:s.toast,
+      isHist:s.screen==='hist',isCierre:s.screen==='cierre',hist:H.hist,sel:this.buildSel(H.items),ci:this.buildCierre(),
+      setTipoCob:()=>this.setState({histTipo:'cob',histSel:null}),setTipoHor:()=>this.setState({histTipo:'hor',histSel:null}),
+      setVistaMes:()=>this.setState({histVista:'mes'}),setVistaSem:()=>this.setState({histVista:'sem'}),
+      goHist:()=>this.setState({screen:'hist'}),
+      confirmOpen:s.confirmOpen,closeConfirm:()=>this.setState({confirmOpen:false}),stop:e=>e.stopPropagation(),
+      doDelete:()=>{this.setState(st=>({deleted:{...st.deleted,[st.histSel]:true},histSel:null,confirmOpen:false}));this.showToast('Liquidación eliminada correctamente.');}
+    };
+  }
+}
+</script>
+</body>
+</html>

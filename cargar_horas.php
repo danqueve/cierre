@@ -93,127 +93,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+<?php
+$dias_lbl   = ['LUNES' => 'Lunes', 'MARTES' => 'Martes', 'MIERCOLES' => 'Miércoles', 'JUEVES' => 'Jueves', 'VIERNES' => 'Viernes', 'SABADO' => 'Sábado'];
+$dias_short = ['LUNES' => 'Lu', 'MARTES' => 'Ma', 'MIERCOLES' => 'Mi', 'JUEVES' => 'Ju', 'VIERNES' => 'Vi', 'SABADO' => 'Sá'];
+$emp_sel = $editando ? $cierre_edit['zona'] : $empleados[0];
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Cargar Horarios</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/organic.css">
+    <link rel="stylesheet" href="assets/css/imperio.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="assets/js/main.js" defer></script>
-    <style>
-        /* Nuevos estilos para la grilla de horarios */
-        .grid-dias {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .card-dia {
-            background-color: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(124,58,237,0.06);
-            transition: box-shadow 0.2s, border-color 0.2s;
-        }
-        .card-dia:hover {
-            border-color: #c4b5fd;
-            box-shadow: 0 4px 16px rgba(124,58,237,0.12);
-        }
-
-        .card-dia-header {
-            background: var(--tint-purple);
-            padding: 10px 15px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .dia-nombre {
-            font-weight: 700;
-            color: var(--accent-purple);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.85rem;
-        }
-        .dia-total {
-            font-size: 0.88rem;
-            color: var(--accent-yellow);
-            font-weight: 700;
-            background: var(--tint-yellow);
-            padding: 3px 10px;
-            border-radius: 20px;
-            border: 1px solid rgba(180, 83, 9, 0.2);
-        }
-
-        .card-dia-body { padding: 15px; }
-
-        .turno-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-            gap: 10px;
-            transition: all 0.2s ease;
-        }
-        .turno-row:last-child { margin-bottom: 0; }
-
-        .turno-label {
-            width: 70px;
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .time-input-group {
-            flex: 1;
-            display: flex;
-            gap: 5px;
-            align-items: center;
-        }
-        .time-input-group input {
-            width: 100%;
-            background-color: #faf9ff;
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            padding: 8px;
-            border-radius: 6px;
-            text-align: center;
-            font-family: monospace;
-            font-size: 1rem;
-        }
-        .time-input-group input:focus {
-            border-color: var(--accent-purple);
-            background-color: #f5f2ff;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
-        }
-
-        .ajustes-section {
-            background: var(--tint-purple);
-            border: 1px dashed #c4b5fd;
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 20px;
-        }
-    </style>
     <script>
+        var DIAS = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
+
         function calcularHoras() {
             let totalMinutosSemana = 0;
             const valorHora = parseFloat(document.getElementById('valor_hora').value) || 0;
             const saldoFavor = parseFloat(document.getElementById('saldo_favor').value) || 0;
             const descuento = parseFloat(document.getElementById('descuento').value) || 0;
-            
-            const dias = ['LUNES', 'MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES', 'SABADO'];
 
-            dias.forEach(dia => {
+            DIAS.forEach(dia => {
                 const e1 = document.getElementsByName(`horas[${dia}][entrada]`)[0].value;
                 const s1 = document.getElementsByName(`horas[${dia}][salida]`)[0].value;
 
                 const spanTotal = document.getElementById(`total_${dia}`);
+                const barra = document.getElementById(`barra_${dia}`);
                 let minutosDia = 0;
 
                 if (e1 && s1) {
@@ -224,13 +133,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     const h = Math.floor(minutosDia / 60);
                     const m = minutosDia % 60;
                     spanTotal.innerText = `${h}h ${m}m`;
-                    spanTotal.style.opacity = '1';
-                    spanTotal.style.color = '#e0af68';
+                    spanTotal.classList.add('on');
                     totalMinutosSemana += minutosDia;
+
+                    // Barra de turno: left = inicio/24h, width = duración/24h
+                    const partes = e1.split(':');
+                    const inicio = parseInt(partes[0]) * 60 + parseInt(partes[1]);
+                    const ancho = Math.min(minutosDia, 1440 - inicio);
+                    barra.style.left = (inicio / 1440 * 100) + '%';
+                    barra.style.width = (ancho / 1440 * 100) + '%';
                 } else {
                     spanTotal.innerText = '0h 0m';
-                    spanTotal.style.opacity = '0.5';
-                    spanTotal.style.color = '#ccc';
+                    spanTotal.classList.remove('on');
+                    barra.style.left = '0';
+                    barra.style.width = '0';
                 }
             });
 
@@ -244,36 +160,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Actualizar UI
             document.getElementById('t_horas').innerText = `${horasTotales}h ${minutosTotales}m`;
-            
+
             const formatter = new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' });
-            
+
             document.getElementById('t_bruto').innerText = formatter.format(sueldoBruto);
+            document.getElementById('t_saldo').innerText = formatter.format(saldoFavor);
+            document.getElementById('t_desc').innerText = formatter.format(descuento);
             document.getElementById('t_neto').innerText = formatter.format(totalNeto);
         }
 
         function calcularDiferencia(inicio, fin) {
             const start = new Date(`2000-01-01T${inicio}`);
             const end = new Date(`2000-01-01T${fin}`);
-            let diff = (end - start) / 1000 / 60; 
+            let diff = (end - start) / 1000 / 60;
             if (diff < 0) diff += 24 * 60;
             return diff;
         }
 
+        // Copia entrada/salida del lunes a martes–viernes (no al sábado)
+        function repetirLunes() {
+            const e = document.getElementsByName('horas[LUNES][entrada]')[0].value;
+            const s = document.getElementsByName('horas[LUNES][salida]')[0].value;
+            ['MARTES', 'MIERCOLES', 'JUEVES', 'VIERNES'].forEach(dia => {
+                document.getElementsByName(`horas[${dia}][entrada]`)[0].value = e;
+                document.getElementsByName(`horas[${dia}][salida]`)[0].value = s;
+            });
+            calcularHoras();
+        }
+
+        function sumarDias(d, n) { const r = new Date(d); r.setDate(d.getDate() + n); return r; }
+        function dm(d) { return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0'); }
+
+        function actualizarFechas() {
+            const v = document.querySelector('input[name="fecha_inicio"]').value;
+            const p = v ? v.split('-') : null;
+            const lunes = p ? new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2])) : null;
+            document.querySelectorAll('[data-dia-idx]').forEach(el => {
+                el.innerText = lunes ? dm(sumarDias(lunes, parseInt(el.getAttribute('data-dia-idx')))) : '';
+            });
+        }
+
+        function actualizarEmpleado() {
+            const z = document.querySelector('input[name="zona"]:checked');
+            if (z) document.getElementById('r_emp').innerText = z.value;
+        }
+
         window.addEventListener('load', function() {
             lucide.createIcons();
-            <?php if($editando): ?>
+            actualizarFechas();
+            actualizarEmpleado();
             calcularHoras();
-            <?php endif; ?>
+            document.querySelector('input[name="fecha_inicio"]').addEventListener('change', actualizarFechas);
+            document.querySelectorAll('input[name="zona"]').forEach(r => r.addEventListener('change', actualizarEmpleado));
         });
     </script>
 </head>
-</head>
-<body class="fade-in">
-    
+<body>
+
     <?php include __DIR__ . '/includes/header.php'; ?>
 
-    <div class="container">
-        
+    <main class="imp-main">
+
         <div id="toast-container" class="toast-container"></div>
 
         <?php if($mensaje): ?>
@@ -286,150 +233,150 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </script>
         <?php endif; ?>
 
-        <form method="POST">
-            <?= csrf_field() ?>
-            <?php if($editando): ?>
-                <input type="hidden" name="cierre_id" value="<?= $cierre_edit['id'] ?>">
-            <?php endif; ?>
-
-            <!-- 1. Cabecera de Configuración -->
-            <div class="card">
-                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
-                    <span><?= $editando ? 'Editar Liquidación de Jornales' : 'Nueva Liquidación de Jornales' ?></span>
-                    <?php if($editando): ?>
-                        <a href="historial_horas.php" class="btn" style="background:white; border:1px solid var(--border-color); font-size:0.85rem; padding:6px 14px; color:var(--text-muted);">
-                            &larr; Volver al Historial
-                        </a>
-                    <?php endif; ?>
+        <div class="imp-page">
+            <div class="imp-dash-head">
+                <div class="imp-page-head">
+                    <span class="imp-kicker sage">Jornales</span>
+                    <h1><?= $editando ? 'Editar liquidación de jornales' : 'Nueva liquidación de jornales' ?></h1>
+                    <p>Cargá entrada y salida de cada día; las horas y el total se calculan solos.</p>
                 </div>
-
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; align-items: end;">
-                    <div class="input-group">
-                        <label>Empleado</label>
-                        <i data-lucide="user" class="input-icon"></i>
-                        <select name="zona" required class="input-with-icon">
-                            <?php foreach($empleados as $emp): ?>
-                                <option value="<?= e($emp) ?>" <?= ($editando && $cierre_edit['zona'] === $emp) ? 'selected' : '' ?>>
-                                    <?= e($emp) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <label>Inicio Semana (Lunes)</label>
-                        <i data-lucide="calendar" class="input-icon"></i>
-                        <input type="date" name="fecha_inicio" required class="input-with-icon"
-                            value="<?= $editando ? e($cierre_edit['fecha_inicio']) : date('Y-m-d', strtotime('monday this week')) ?>">
-                    </div>
-                    <div class="input-group">
-                        <label style="color: var(--accent-green); font-weight: bold;">Valor Hora ($)</label>
-                        <i data-lucide="dollar-sign" class="input-icon" style="color: var(--accent-green);"></i>
-                        <input type="number" id="valor_hora" name="valor_hora" step="0.01" class="calculable input-with-icon" oninput="calcularHoras()"
-                            placeholder="0.00"
-                            value="<?= $editando && $cierre_edit['valor_hora'] > 0 ? e($cierre_edit['valor_hora']) : '' ?>"
-                            style="font-size: 1.2em; font-weight: bold; color: var(--accent-green); border-bottom-color: var(--accent-green);">
-                    </div>
-                </div>
+                <?php if($editando): ?>
+                    <a href="historial_horas.php" class="btn btn-secondary imp-btn-today">&larr; Volver al historial</a>
+                <?php endif; ?>
             </div>
 
-            <!-- 2. Grilla de Días (Nuevo Diseño Visual) -->
-            <div class="grid-dias">
-                <?php foreach($dias as $dia): ?>
-                <div class="card-dia">
-                    <div class="card-dia-header">
-                        <span class="dia-nombre"><?= $dia ?></span>
-                        <span id="total_<?= $dia ?>" class="dia-total">0h 0m</span>
-                    </div>
-                    <div class="card-dia-body">
-                        <?php
+            <form method="POST" class="imp-layout">
+                <?= csrf_field() ?>
+                <?php if($editando): ?>
+                    <input type="hidden" name="cierre_id" value="<?= $cierre_edit['id'] ?>">
+                <?php endif; ?>
+
+                <div class="imp-col">
+
+                    <!-- 1. Configuración -->
+                    <section class="imp-section">
+                        <div style="display:flex; flex-direction:column; gap:10px;">
+                            <span class="imp-label">Empleado</span>
+                            <div class="imp-chips">
+                                <?php foreach($empleados as $emp): ?>
+                                    <label class="imp-chip avatar">
+                                        <input type="radio" name="zona" value="<?= e($emp) ?>" required <?= $emp_sel === $emp ? 'checked' : '' ?>>
+                                        <span><i class="ini"><?= e(mb_substr($emp, 0, 1)) ?></i><?= e($emp) ?></span>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+
+                        <div class="imp-row">
+                            <div class="field" style="flex:0 1 220px;">
+                                <label for="fecha_inicio">Inicio de semana (lunes)</label>
+                                <input type="date" id="fecha_inicio" name="fecha_inicio" required class="input on-light"
+                                       value="<?= $editando ? e($cierre_edit['fecha_inicio']) : date('Y-m-d', strtotime('monday this week')) ?>">
+                            </div>
+                            <div class="field" style="flex:0 1 200px;">
+                                <label for="valor_hora" style="color:var(--color-accent-2-700); font-weight:700;">Valor hora</label>
+                                <div class="imp-money sage"><i>$</i>
+                                    <input type="number" id="valor_hora" name="valor_hora" step="0.01" inputmode="decimal"
+                                           class="input calculable" oninput="calcularHoras()" placeholder="0.00"
+                                           value="<?= $editando && $cierre_edit['valor_hora'] > 0 ? e($cierre_edit['valor_hora']) : '' ?>">
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary imp-btn-today" style="margin-left:auto;" onclick="repetirLunes()">
+                                <i data-lucide="copy" style="width:16px; height:16px;"></i> Repetir horario del lunes
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- 2. Grilla de días -->
+                    <div class="imp-hgrid">
+                        <?php foreach($dias as $i => $dia):
                             $valEntrada = ($editando && isset($horas_edit[$dia])) ? substr($horas_edit[$dia]['hora_entrada'] ?? '', 0, 5) : '';
                             $valSalida  = ($editando && isset($horas_edit[$dia])) ? substr($horas_edit[$dia]['hora_salida']  ?? '', 0, 5) : '';
                         ?>
-                        <!-- Turno Único -->
-                        <div class="turno-row">
-                            <div class="turno-label">HORARIO</div>
-                            <div class="time-input-group input-group" style="margin-bottom: 0;">
-                                <i data-lucide="clock" class="input-icon" style="width:14px;"></i>
-                                <input type="time" name="horas[<?= $dia ?>][entrada]" oninput="calcularHoras()" title="Entrada" class="input-with-icon" value="<?= e($valEntrada) ?>">
-                                <span style="color:var(--border-color)">-</span>
-                                <input type="time" name="horas[<?= $dia ?>][salida]" oninput="calcularHoras()" title="Salida" class="input-with-icon" value="<?= e($valSalida) ?>">
+                        <div class="imp-hcard">
+                            <div class="imp-hcard-head">
+                                <div class="imp-day-id">
+                                    <span class="imp-day-badge sage"><?= $dias_short[$dia] ?></span>
+                                    <div>
+                                        <strong><?= $dias_lbl[$dia] ?></strong>
+                                        <small data-dia-idx="<?= $i ?>"></small>
+                                    </div>
+                                </div>
+                                <span id="total_<?= $dia ?>" class="imp-hpill">0h 0m</span>
+                            </div>
+                            <div class="imp-time-grid">
+                                <div class="field">
+                                    <label>Entrada</label>
+                                    <input type="time" name="horas[<?= $dia ?>][entrada]" oninput="calcularHoras()" class="input" value="<?= e($valEntrada) ?>">
+                                </div>
+                                <div class="field">
+                                    <label>Salida</label>
+                                    <input type="time" name="horas[<?= $dia ?>][salida]" oninput="calcularHoras()" class="input" value="<?= e($valSalida) ?>">
+                                </div>
+                            </div>
+                            <div class="imp-shift">
+                                <div class="imp-shift-track"><div class="imp-shift-fill" id="barra_<?= $dia ?>"></div></div>
+                                <div class="imp-shift-marks"><span>0h</span><span>6h</span><span>12h</span><span>18h</span><span>24h</span></div>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <!-- 3. Ajustes -->
+                    <div class="imp-h3">
+                        <h3>Ajustes</h3><small>Opcional</small>
+                    </div>
+                    <div class="imp-adjust-grid">
+                        <div class="imp-adjust plus">
+                            <div class="imp-adjust-title"><span class="imp-adjust-sign">+</span> Ingresos extra</div>
+                            <div class="field">
+                                <label>Monto</label>
+                                <input type="number" id="saldo_favor" name="saldo_favor" step="0.01" oninput="calcularHoras()" placeholder="0.00" class="input on-light"
+                                       value="<?= $editando && $cierre_edit['saldo_favor'] > 0 ? e($cierre_edit['saldo_favor']) : '' ?>">
+                            </div>
+                            <div class="field">
+                                <label>Concepto</label>
+                                <input type="text" name="saldo_concepto" placeholder="Concepto" class="input on-light"
+                                       value="<?= $editando ? e($cierre_edit['saldo_concepto']) : '' ?>">
+                            </div>
+                        </div>
+                        <div class="imp-adjust minus">
+                            <div class="imp-adjust-title"><span class="imp-adjust-sign">−</span> Descuentos / adelantos</div>
+                            <div class="field">
+                                <label>Monto</label>
+                                <input type="number" id="descuento" name="descuento" step="0.01" oninput="calcularHoras()" placeholder="0.00" class="input on-light"
+                                       value="<?= $editando && $cierre_edit['descuento_creditos'] > 0 ? e($cierre_edit['descuento_creditos']) : '' ?>">
+                            </div>
+                            <div class="field">
+                                <label>Concepto</label>
+                                <input type="text" name="descuento_concepto" placeholder="Concepto" class="input on-light"
+                                       value="<?= $editando ? e($cierre_edit['descuento_creditos_concepto']) : '' ?>">
                             </div>
                         </div>
                     </div>
                 </div>
-                <?php endforeach; ?>
-            </div>
 
-            <!-- 3. Ajustes y Totales -->
-            <div class="card">
-                <div class="card-header">Ajustes y Liquidación Final</div>
-                
-                <div class="ajustes-section">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
-                        
-                        <!-- Columna: Sumas (Saldo a Favor) -->
-                        <div class="input-group">
-                            <h4 style="margin-top: 0; color: var(--accent-green);">Ingresos Extra / Saldo a Favor (+)</h4>
-                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                                <div class="input-group" style="width: 140px; margin-bottom: 0;">
-                                    <i data-lucide="plus" class="input-icon" style="color: var(--accent-green);"></i>
-                                    <input type="number" id="saldo_favor" name="saldo_favor" step="0.01" oninput="calcularHoras()" placeholder="0.00" class="input-with-icon"
-                                        value="<?= $editando && $cierre_edit['saldo_favor'] > 0 ? e($cierre_edit['saldo_favor']) : '' ?>"
-                                        style="font-weight: bold; color: var(--accent-green); border-bottom-color: var(--accent-green);">
-                                </div>
-                                <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                                    <i data-lucide="tag" class="input-icon"></i>
-                                    <input type="text" name="saldo_concepto" placeholder="Concepto" class="input-with-icon"
-                                        value="<?= $editando ? e($cierre_edit['saldo_concepto']) : '' ?>">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Columna: Restas (Descuentos) -->
-                        <div class="input-group">
-                            <h4 style="margin-top: 0; color: var(--accent-red);">Descuentos / Adelantos (-)</h4>
-                            <div style="display: flex; gap: 10px;">
-                                <div class="input-group" style="width: 140px; margin-bottom: 0;">
-                                    <i data-lucide="minus" class="input-icon" style="color: var(--accent-red);"></i>
-                                    <input type="number" id="descuento" name="descuento" step="0.01" oninput="calcularHoras()" placeholder="0.00" class="input-with-icon"
-                                        value="<?= $editando && $cierre_edit['descuento_creditos'] > 0 ? e($cierre_edit['descuento_creditos']) : '' ?>"
-                                        style="font-weight: bold; color: var(--accent-red); border-bottom-color: var(--accent-red);">
-                                </div>
-                                <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                                    <i data-lucide="tag" class="input-icon"></i>
-                                    <input type="text" name="descuento_concepto" placeholder="Concepto" class="input-with-icon"
-                                        value="<?= $editando ? e($cierre_edit['descuento_creditos_concepto']) : '' ?>">
-                                </div>
-                            </div>
-                        </div>
+                <!-- Panel resumen -->
+                <aside class="imp-summary">
+                    <span class="imp-kicker sage">Liquidación · <span id="r_emp"><?= e($emp_sel) ?></span></span>
+                    <div class="imp-summary-total">
+                        <small>Total a pagar</small>
+                        <span class="imp-money-big" id="t_neto">$ 0,00</span>
                     </div>
-                </div>
-
-                <!-- Footer Totales -->
-                <div style="margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px; display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
-                    
-                    <div style="display: flex; justify-content: space-between; width: 100%; max-width: 400px; color: #888;">
-                        <span>Total Horas:</span>
-                        <span id="t_horas" style="color: #fff; font-weight: bold;">0h 0m</span>
+                    <div class="imp-summary-rows">
+                        <div><span>Total horas</span><strong class="imp-num" id="t_horas">0h 0m</strong></div>
+                        <div><span>Subtotal (horas × valor)</span><strong class="imp-num" id="t_bruto">$ 0,00</strong></div>
+                        <hr>
+                        <div class="good"><span>Ingresos extra (+)</span><strong class="imp-num" id="t_saldo">$ 0,00</strong></div>
+                        <div class="warn"><span>Descuentos (−)</span><strong class="imp-num" id="t_desc">$ 0,00</strong></div>
                     </div>
-                    
-                    <div style="display: flex; justify-content: space-between; width: 100%; max-width: 400px; color: #aaa;">
-                        <span>Subtotal (Horas x Valor):</span>
-                        <span id="t_bruto" style="color: #fff;">$ 0,00</span>
-                    </div>
-
-                    <div style="display: flex; justify-content: space-between; width: 100%; max-width: 400px; font-size: 1.5rem; font-weight: bold; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border-color);">
-                        <span style="color: var(--accent-blue);">TOTAL A PAGAR:</span>
-                        <span id="t_neto" style="color: var(--accent-green);">$ 0,00</span>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary" style="margin-top: 20px; font-size: 1.1em; padding: 12px 40px; width: 100%; max-width: 400px;">
-                        <?= $editando ? 'Actualizar Liquidación' : 'Guardar Liquidación' ?>
+                    <button type="submit" class="btn btn-primary">
+                        <i data-lucide="save" style="width:18px; height:18px;"></i>
+                        <?= $editando ? 'Actualizar y ver liquidación' : 'Guardar y ver liquidación' ?>
                     </button>
-                </div>
-
-            </div>
-        </form>
-    </div>
+                </aside>
+            </form>
+        </div>
+    </main>
 </body>
 </html>

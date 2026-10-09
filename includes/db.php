@@ -87,4 +87,22 @@ function csrf_verify(): void {
 function formatCurrency($val): string {
     $valor = $val ?? 0;
     return '$ ' . number_format((float)$valor, 0, ',', '.');
-}
+}
+/**
+ * Monto corto para gráficos y calendarios: "$ 324 mil" / "$ 1,24 M".
+ */
+function montoCorto($v): string {
+    $v = (float)$v;
+    if ($v >= 1000000) return '$ ' . number_format($v / 1000000, 2, ',', '.') . ' M';
+    if ($v >= 1000)    return '$ ' . number_format($v / 1000, 0, ',', '.') . ' mil';
+    return '$ ' . number_format($v, 0, ',', '.');
+}
+
+/**
+ * Minutos -> "7h 30m" (o "8h" si no hay minutos sueltos).
+ */
+function formatHoras(int $min): string {
+    $h = intdiv($min, 60);
+    $m = $min % 60;
+    return $h . 'h' . ($m > 0 ? ' ' . $m . 'm' : '');
+}

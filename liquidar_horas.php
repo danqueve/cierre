@@ -42,182 +42,26 @@ $descuento = $cierre['descuento_creditos'] ?? 0; // Usamos el campo que guardamo
 
 $totalPagar = $subtotalHoras + $saldoFavor - $descuento;
 
+
+$dias_nom = ['LUNES' => 'Lunes', 'MARTES' => 'Martes', 'MIERCOLES' => 'Miércoles', 'JUEVES' => 'Jueves', 'VIERNES' => 'Viernes', 'SABADO' => 'Sábado'];
+$dias_off = ['LUNES' => 0, 'MARTES' => 1, 'MIERCOLES' => 2, 'JUEVES' => 3, 'VIERNES' => 4, 'SABADO' => 5];
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/png" href="assets/img/logo.png">
-    <title>Liquidación Horas - <?= $cierre['zona'] ?></title>
-    <link rel="stylesheet" href="assets/css/style.css">
-    <style>
-        body { background-color: #525659; }
-        .preview-container { display: flex; justify-content: center; padding: 40px 0; min-height: 100vh; }
-
-        .a4-page {
-            width: 210mm;
-            min-height: 297mm;
-            padding: 20mm;
-            box-sizing: border-box;
-            margin: 0 auto;
-            background: #fff;
-            box-shadow: 0 0 15px rgba(0,0,0,0.4);
-            color: #000;
-            position: relative;
-            font-family: Arial, sans-serif;
-            font-size: 10pt;
-        }
-
-        /* Encabezado del documento */
-        .doc-header {
-            text-align: center;
-            border-bottom: 3px solid #1a1a2e;
-            padding-bottom: 14px;
-            margin-bottom: 22px;
-        }
-        .doc-header h2 {
-            margin: 0;
-            text-transform: uppercase;
-            font-size: 18pt;
-            font-weight: bold;
-            color: #1a1a2e;
-            letter-spacing: 1px;
-        }
-        .doc-header h4 {
-            margin: 4px 0 0;
-            color: #444;
-            font-weight: normal;
-            font-size: 11pt;
-        }
-
-        /* Info box (empleado, semana, fecha) */
-        .a4-page .info-box {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 20px;
-            padding: 10px 15px;
-            background: #f0f4ff;
-            border: 1px solid #c0cce8;
-            border-radius: 6px;
-        }
-        .a4-page .info-item {
-            font-size: 10pt;
-            color: #222;
-        }
-        .a4-page .info-item strong {
-            color: #1a1a2e;
-        }
-
-        /* Tabla de horas */
-        .a4-page .hours-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 22px;
-        }
-        .a4-page .hours-table th {
-            background: #1a1a2e;
-            color: #fff;
-            padding: 8px 10px;
-            text-align: center;
-            font-size: 10pt;
-            border: 1px solid #1a1a2e;
-        }
-        .a4-page .hours-table .th-group {
-            background: #2d3561;
-            color: #fff;
-            font-size: 9pt;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .a4-page .hours-table td {
-            padding: 7px 10px;
-            border: 1px solid #ccc;
-            text-align: center;
-            font-size: 10pt;
-            color: #000;
-            background: #fff;
-        }
-        .a4-page .hours-table tbody tr:nth-child(even) td {
-            background: #f7f8fc;
-        }
-        .a4-page .hours-table tbody tr:hover td {
-            background: #eef1fb;
-        }
-
-        /* Caja de totales */
-        .a4-page .total-box {
-            margin-top: 18px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            padding: 14px 18px;
-            background: #fafafa;
-            max-width: 380px;
-            margin-left: auto;
-        }
-        .a4-page .total-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-            color: #222;
-            font-size: 10pt;
-            border-bottom: 1px solid #eee;
-        }
-        .a4-page .total-row:last-child { border-bottom: none; }
-        .a4-page .total-row strong { color: #000; }
-        .a4-page .grand-total {
-            font-size: 13pt;
-            font-weight: bold;
-            border-top: 2px solid #1a1a2e !important;
-            margin-top: 8px;
-            padding-top: 10px;
-            color: #1a1a2e;
-            border-bottom: none !important;
-        }
-        .a4-page .sub-detail {
-            font-size: 8.5pt;
-            color: #555;
-            font-style: italic;
-            padding-left: 8px;
-            margin-top: -2px;
-        }
-
-        /* Firmas */
-        .a4-page .firma-box {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 50px;
-        }
-        .a4-page .firma-line {
-            border-top: 1.5px solid #333;
-            padding-top: 8px;
-            text-align: center;
-            width: 160px;
-            color: #222;
-            font-size: 9pt;
-            font-weight: bold;
-        }
-
-        @page {
-            size: A4 portrait;
-            margin: 0;
-        }
-
-        @media print {
-            * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            html, body { background: #fff !important; margin: 0; padding: 0; }
-            .no-print { display: none !important; }
-            .preview-container { display: block; padding: 0; margin: 0; }
-            .a4-page { box-shadow: none; margin: 0; }
-        }
-    </style>
+    <title>Liquidación Horas - <?= e($cierre['zona']) ?></title>
+    <link rel="stylesheet" href="assets/css/organic.css">
+    <link rel="stylesheet" href="assets/css/imperio.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
         window.addEventListener('load', function() {
             lucide.createIcons();
             <?php if($autoExport): ?>
-            const element = document.querySelector('.a4-page');
+            const element = document.querySelector('.sheet');
             const nombre = '<?= addslashes($cierre['zona']) ?>';
             const fecha  = '<?= date('d-m-Y', strtotime($cierre['fecha_inicio'])) ?>';
             const opt = {
@@ -227,133 +71,122 @@ $totalPagar = $subtotalHoras + $saldoFavor - $descuento;
                 html2canvas:{ scale: 2, useCORS: true, letterRendering: true },
                 jsPDF:      { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-            html2pdf().set(opt).from(element).save();
+            element.classList.add('exporting');
+            html2pdf().set(opt).from(element).save().then(function() { element.classList.remove('exporting'); });
             <?php endif; ?>
         });
     </script>
 </head>
 <body>
+    <?php include __DIR__ . '/includes/header.php'; ?>
 
-    <div class="no-print" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
-        <a href="cargar_horas.php" class="btn" style="background: white; color: var(--text-main); margin-right: 10px; border: 1px solid var(--border-color); box-shadow:0 2px 8px rgba(0,0,0,0.08);">&larr; Volver</a>
-        <button onclick="window.print()" class="btn" style="background: var(--accent-purple); color: white; font-weight: bold; border: none; box-shadow:0 4px 12px rgba(124,58,237,0.3);">
-            Imprimir <i data-lucide="printer" style="width:16px; height:16px; vertical-align:middle;"></i>
-        </button>
-    </div>
-
-    <div class="preview-container">
-        <div class="a4-page">
-            
-            <div class="doc-header">
-                <h2>Liquidación de Jornales</h2>
-                <h4>Control de Horarios Semanal</h4>
+    <main class="imp-main">
+        <div class="sheet-page">
+            <div class="sheet-toolbar no-print">
+                <div class="imp-page-head">
+                    <span class="imp-kicker sage">Vista de impresión · A4</span>
+                    <h2>Liquidación de <?= e($cierre['zona']) ?></h2>
+                </div>
+                <a href="cargar_horas.php?id=<?= (int)$cierre['id'] ?>" class="btn btn-secondary">
+                    <i data-lucide="arrow-left" style="width:16px; height:16px;"></i> Editar horarios
+                </a>
+                <button type="button" onclick="window.print()" class="btn btn-primary">
+                    <i data-lucide="printer" style="width:16px; height:16px;"></i> Imprimir / Guardar PDF
+                </button>
             </div>
 
-            <div class="info-box">
-                <div class="info-item">Empleado: <strong><?= $cierre['zona'] ?></strong></div>
-                <div class="info-item">Semana del: <strong><?= date('d/m/Y', strtotime($cierre['fecha_inicio'])) ?></strong></div>
-                <div class="info-item">Fecha Emisión: <strong><?= date('d/m/Y') ?></strong></div>
-            </div>
+            <div class="sheet-wrap">
+                <div class="sheet">
 
-            <table class="hours-table">
-                <thead>
-                    <tr>
-                        <th rowspan="2" style="width: 15%;">Día</th>
-                        <th colspan="2" class="th-group">Horario</th>
-                        <th rowspan="2" style="width: 15%;">Total Horas</th>
-                    </tr>
-                    <tr>
-                        <th style="width: 15%;">Entrada</th>
-                        <th style="width: 15%;">Salida</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach($detalles as $d): 
-                        $minutosDia = 0;
-                        if($d['hora_entrada'] && $d['hora_salida']) {
-                            $start = strtotime($d['hora_entrada']);
-                            $end = strtotime($d['hora_salida']);
-                            $diff = ($end - $start) / 60;
-                            if($diff < 0) $diff += 24 * 60;
-                            $minutosDia += $diff;
-                        }
+                    <div class="sheet-head">
+                        <img class="sheet-logo" src="assets/img/logo.png" alt="Imperio">
+                        <div class="sheet-brand"><b>Imperio<span>.</span></b><small>Sistema de gestión</small></div>
+                        <span class="tag tag-accent-2" style="font-size:12px; padding:6px 12px;">Semana del <?= date('d/m/Y', strtotime($cierre['fecha_inicio'])) ?></span>
+                    </div>
 
-                        $horasStr = "-";
-                        if($minutosDia > 0) {
-                            $h = floor($minutosDia / 60);
-                            $m = $minutosDia % 60;
-                            $horasStr = "{$h}h {$m}m";
-                        }
-                    ?>
-                    <tr>
-                        <td style="font-weight: bold; text-align: left; padding-left: 15px;"><?= $d['dia_semana'] ?></td>
-                        <td><?= $d['hora_entrada'] ? date('H:i', strtotime($d['hora_entrada'])) : '-' ?></td>
-                        <td><?= $d['hora_salida'] ? date('H:i', strtotime($d['hora_salida'])) : '-' ?></td>
-                        <td style="font-weight: bold; background-color: #dde3f5; color: #1a1a2e;"><?= $horasStr ?></td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    <div class="sheet-title">
+                        <h1>Liquidación de jornales</h1>
+                        <span class="sheet-sub">Control de horarios semanal</span>
+                    </div>
 
-            <div class="total-box">
-                <!-- 1. Horas Trabajadas -->
-                <div class="total-row">
-                    <span>Horas Trabajadas:</span>
-                    <strong><?= $horasReales ?>h <?= $minutosReales ?>m</strong>
-                </div>
-                <div class="total-row" style="border-bottom: 1px solid #ccc; padding-bottom: 5px;">
-                    <span>Valor Hora:</span>
-                    <span><?= formatCurrency($cierre['valor_hora']) ?></span>
-                </div>
-                <div class="total-row" style="margin-top: 5px;">
-                    <span>Subtotal Horas:</span>
-                    <span><?= formatCurrency($subtotalHoras) ?></span>
-                </div>
+                    <div class="sheet-info">
+                        <div><small>Empleado</small><strong><?= e($cierre['zona']) ?></strong></div>
+                        <div><small>Semana del</small><strong><?= date('d/m/Y', strtotime($cierre['fecha_inicio'])) ?></strong></div>
+                        <div><small>Fecha emisión</small><strong><?= date('d/m/Y') ?></strong></div>
+                    </div>
 
-                <!-- 2. Ingresos Extra -->
-                <?php if($saldoFavor > 0): ?>
-                <div class="total-row" style="color: black;">
-                    <span>(+) Ingresos Extra:</span>
-                    <span><?= formatCurrency($saldoFavor) ?></span>
-                </div>
-                <?php if($cierre['saldo_concepto']): ?>
-                    <div class="sub-detail">(<?= $cierre['saldo_concepto'] ?>)</div>
-                <?php endif; ?>
-                <?php endif; ?>
+                    <div class="sheet-table-wrap">
+                        <table class="sheet-table sage">
+                            <thead>
+                                <tr>
+                                    <th>Día</th>
+                                    <th class="c">Entrada</th>
+                                    <th class="c">Salida</th>
+                                    <th class="r">Total horas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach($detalles as $d):
+                                    $minutosDia = 0;
+                                    if($d['hora_entrada'] && $d['hora_salida']) {
+                                        $start = strtotime($d['hora_entrada']);
+                                        $end = strtotime($d['hora_salida']);
+                                        $diff = ($end - $start) / 60;
+                                        if($diff < 0) $diff += 24 * 60;
+                                        $minutosDia += $diff;
+                                    }
 
-                <!-- 3. Descuentos -->
-                <?php if($descuento > 0): ?>
-                <div class="total-row" style="color: black;">
-                    <span>(-) Descuentos/Adelantos:</span>
-                    <span>- <?= formatCurrency($descuento) ?></span>
-                </div>
-                <?php if($cierre['descuento_creditos_concepto']): ?>
-                    <div class="sub-detail">(<?= $cierre['descuento_creditos_concepto'] ?>)</div>
-                <?php endif; ?>
-                <?php endif; ?>
+                                    $horasStr = "-";
+                                    if($minutosDia > 0) {
+                                        $h = floor($minutosDia / 60);
+                                        $m = $minutosDia % 60;
+                                        $horasStr = "{$h}h {$m}m";
+                                    }
+                                    $off = $dias_off[$d['dia_semana']] ?? 0;
+                                    $fechaDia = date('d/m', strtotime("+$off days", strtotime($cierre['fecha_inicio'])));
+                                ?>
+                                <tr>
+                                    <td><strong><?= $dias_nom[$d['dia_semana']] ?? e($d['dia_semana']) ?></strong> <span style="color:var(--color-neutral-700);"><?= $fechaDia ?></span></td>
+                                    <td class="c"><?= $d['hora_entrada'] ? date('H:i', strtotime($d['hora_entrada'])) : '-' ?></td>
+                                    <td class="c"><?= $d['hora_salida'] ? date('H:i', strtotime($d['hora_salida'])) : '-' ?></td>
+                                    <td class="r total-col"><?= $horasStr ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
 
-                <!-- 4. TOTAL FINAL -->
-                <div class="total-row grand-total">
-                    <span>TOTAL A PAGAR:</span>
-                    <span><?= formatCurrency($totalPagar) ?></span>
-                </div>
-            </div>
+                    <div class="sheet-totals">
+                        <div class="sheet-line"><span>Horas trabajadas</span><strong><?= $horasReales ?>h <?= $minutosReales ?>m</strong></div>
+                        <div class="sheet-line"><span>Valor hora</span><span><?= formatCurrency($cierre['valor_hora']) ?></span></div>
+                        <div class="sheet-line"><span>Subtotal horas</span><span><?= formatCurrency($subtotalHoras) ?></span></div>
 
-            <div class="firma-box">
-                <div>
-                    <div class="firma-line">Firma Empleado<br><span style="font-weight:normal; font-size:9pt;"><?= $cierre['zona'] ?></span></div>
-                </div>
-                <div>
-                    <div class="firma-line">Firma Responsable</div>
+                        <?php if($saldoFavor > 0): ?>
+                        <div class="sheet-line"><span>(+) Ingresos extra</span><span><?= formatCurrency($saldoFavor) ?></span></div>
+                        <?php if($cierre['saldo_concepto']): ?>
+                            <div class="sheet-line-note">(<?= e($cierre['saldo_concepto']) ?>)</div>
+                        <?php endif; ?>
+                        <?php endif; ?>
+
+                        <?php if($descuento > 0): ?>
+                        <div class="sheet-line"><span>(−) Descuentos / adelantos</span><span>− <?= formatCurrency($descuento) ?></span></div>
+                        <?php if($cierre['descuento_creditos_concepto']): ?>
+                            <div class="sheet-line-note">(<?= e($cierre['descuento_creditos_concepto']) ?>)</div>
+                        <?php endif; ?>
+                        <?php endif; ?>
+
+                        <div class="sheet-grand"><strong>TOTAL A PAGAR</strong><span><?= formatCurrency($totalPagar) ?></span></div>
+                    </div>
+
+                    <div class="sheet-signs">
+                        <div class="sheet-sign"><strong>Firma empleado</strong><small><?= e($cierre['zona']) ?></small></div>
+                        <div class="sheet-sign"><strong>Firma responsable</strong></div>
+                    </div>
+
+                    <div class="sheet-foot">Documento generado por el Sistema de Gestión.</div>
                 </div>
             </div>
-            
-            <div style="position: absolute; bottom: 15mm; left: 20mm; font-size: 9pt; color: #555;">
-                Documento generado por el Sistema de Gestión.
-            </div>
-
         </div>
-    </div>
-
+    </main>
 </body>
 </html>
