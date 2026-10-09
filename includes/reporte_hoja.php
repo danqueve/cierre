@@ -1,7 +1,7 @@
 <?php
 /**
  * Hoja A4 del reporte mensual. Requiere includes/reporte_datos.php ya incluido.
- * $mostrar_comision (opcional): agrega la columna "Comisión 6%".
+ * $mostrar_comision (opcional): agrega la columna "Comisión".
  */
 $mostrar_comision = $mostrar_comision ?? false;
 $periodo = $meses[$mes_actual] . ' ' . $anio_actual;
@@ -33,7 +33,7 @@ $periodo = $meses[$mes_actual] . ' ' . $anio_actual;
                         <th class="r">Efectivo</th>
                         <th class="r">Transf.</th>
                         <th class="r">Total bruto</th>
-                        <?php if ($mostrar_comision): ?><th class="r">Comisión 6%</th><?php endif; ?>
+                        <?php if ($mostrar_comision): ?><th class="r">Comisión</th><?php endif; ?>
                         <th class="r">Gastos</th>
                         <th class="r">Neto final</th>
                     </tr>
@@ -71,7 +71,7 @@ $periodo = $meses[$mes_actual] . ' ' . $anio_actual;
 
         <div class="sheet-foot sheet-foot-row">
             <span>Generado el <?= date('d/m/Y H:i') ?> por <?= e($_SESSION['username'] ?? 'Sistema') ?></span>
-            <span>Neto = bruto − (comisión 6% + saldo a favor)</span>
+            <span>Neto = bruto − (comisión + saldo a favor)</span>
         </div>
     </div>
 </div>

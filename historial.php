@@ -9,7 +9,7 @@ $placeholders = implode(',', array_fill(0, count($empleados_admin), '?'));
 // Un registro por día de cada cierre (el calendario agrupa y totaliza en PHP)
 $sql = "
     SELECT
-        c.id, c.zona, c.fecha_inicio, c.saldo_favor, c.descuento_creditos, c.valor_hora,
+        c.id, c.zona, c.fecha_inicio, c.saldo_favor, c.descuento_creditos, c.valor_hora, c.porcentaje_comision,
         d.dia_semana, d.efectivo, d.transferencia, d.gasto_monto, d.hora_entrada, d.hora_salida
     FROM cierres_semanales c
     LEFT JOIN detalles_diarios d ON c.id = d.cierre_id

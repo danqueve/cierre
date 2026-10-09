@@ -24,7 +24,8 @@ if ($zona_filtro === 'todas') {
             SUM(c.saldo_favor) as total_saldo_favor,
             SUM(d.efectivo) as total_efectivo,
             SUM(d.transferencia) as total_transferencia,
-            SUM(d.gasto_monto) as total_gastos
+            SUM(d.gasto_monto) as total_gastos,
+            SUM((d.efectivo + d.transferencia) * c.porcentaje_comision / 100) as total_comision
         FROM cierres_semanales c
         JOIN detalles_diarios d ON c.id = d.cierre_id
         WHERE MONTH(c.fecha_inicio) = ? AND YEAR(c.fecha_inicio) = ?
@@ -45,7 +46,8 @@ if ($zona_filtro === 'todas') {
             c.saldo_favor as total_saldo_favor,
             SUM(d.efectivo) as total_efectivo,
             SUM(d.transferencia) as total_transferencia,
-            SUM(d.gasto_monto) as total_gastos
+            SUM(d.gasto_monto) as total_gastos,
+            SUM((d.efectivo + d.transferencia) * c.porcentaje_comision / 100) as total_comision
         FROM cierres_semanales c
         JOIN detalles_diarios d ON c.id = d.cierre_id
         WHERE MONTH(c.fecha_inicio) = ? AND YEAR(c.fecha_inicio) = ? AND c.zona = ?
@@ -66,11 +68,11 @@ $reporte = $stmt->fetchAll();
 $g_efectivo = 0; $g_transf = 0; $g_bruto = 0; 
 $g_comision = 0; $g_gastos = 0; $g_neto = 0;
 
-// Filas ya calculadas para la vista (bruto, comisión 6% y neto = bruto − (comisión + saldo a favor))
+// Filas ya calculadas para la vista (bruto, comisión y neto = bruto − (comisión + saldo a favor))
 $filas = [];
 foreach ($reporte as $fila) {
     $bruto    = $fila['total_efectivo'] + $fila['total_transferencia'];
-    $comision = $bruto * 0.06;
+    $comision = (float)$fila['total_comision'];
     $neto     = $bruto - ($comision + $fila['total_saldo_favor']);
 
     $g_efectivo += $fila['total_efectivo'];

@@ -23,7 +23,7 @@ foreach ($rows as $r) {
         $items[$id] = [
             'id' => (int)$id, 'nombre' => $r['zona'], 'inicio' => $r['fecha_inicio'],
             'saldo' => (float)$r['saldo_favor'], 'desc' => (float)$r['descuento_creditos'],
-            'vh' => (float)$r['valor_hora'],
+            'vh' => (float)$r['valor_hora'], 'pct' => (float)($r['porcentaje_comision'] ?? 6),
             'dias' => array_fill_keys(array_keys($dias_nom), ['ef' => 0.0, 'tr' => 0.0, 'gm' => 0.0, 'min' => 0]),
             'ef' => 0.0, 'tr' => 0.0, 'gm' => 0.0, 'min' => 0,
         ];
@@ -118,12 +118,12 @@ foreach ($items as $id => $it) {
         $dias_l[] = [$dias_nom[$dia] . ' ' . $f, $v];
     }
     if ($es_cob) {
-        $comision = ($it['ef'] + $it['tr']) * 0.06;
+        $comision = ($it['ef'] + $it['tr']) * $it['pct'] / 100;
         $lineas = [
             ['Efectivo', formatCurrency($it['ef'])],
             ['Transferencia', formatCurrency($it['tr'])],
             ['Gastos', formatCurrency($it['gm'])],
-            ['Comisión 6%', formatCurrency($comision)],
+            ['Comisión ' . rtrim(rtrim(number_format($it['pct'], 2, ',', ''), '0'), ',') . '%', formatCurrency($comision)],
         ];
         $url_ver = 'ver_cierre.php?id=' . $id;
         $url_edit = null;

@@ -49,7 +49,9 @@ foreach($detalles as $d) {
 }
 
 $totalCobrado = $totalEf + $totalTr;
-$comision = $totalCobrado * 0.06; 
+$pctComision = (float)($cierre['porcentaje_comision'] ?? 6);
+$pctTxt = rtrim(rtrim(number_format($pctComision, 2, ',', ''), '0'), ',');
+$comision = $totalCobrado * $pctComision / 100;
 $saldoFavor = $cierre['saldo_favor'];
 $descuentoCreditos = $cierre['descuento_creditos'] ?? 0;
 
@@ -151,7 +153,7 @@ $dias_nom = ['LUNES' => 'Lunes', 'MARTES' => 'Martes', 'MIERCOLES' => 'Miércole
                         <!-- 1. Liquidación del cobrador -->
                         <div class="sheet-box">
                             <h4>Liquidación cobrador</h4>
-                            <div class="sheet-line"><span>(+) Comisión (6%)</span><span><?= formatCurrency($comision) ?></span></div>
+                            <div class="sheet-line"><span>(+) Comisión (<?= $pctTxt ?>%)</span><span><?= formatCurrency($comision) ?></span></div>
                             <div class="sheet-line"><span>(+) Saldo a favor</span><span><?= formatCurrency($saldoFavor) ?></span></div>
                             <?php if($cierre['saldo_concepto']): ?>
                                 <div class="sheet-line-note">(<?= htmlspecialchars($cierre['saldo_concepto']) ?>)</div>
@@ -168,7 +170,7 @@ $dias_nom = ['LUNES' => 'Lunes', 'MARTES' => 'Martes', 'MIERCOLES' => 'Miércole
                         <div class="sheet-box sage">
                             <h4>Neto a rendir (empresa)</h4>
                             <div class="sheet-line"><span>Total cobranza bruta</span><strong><?= formatCurrency($totalCobrado) ?></strong></div>
-                            <div class="sheet-line"><span>(−) Comisión (6%)</span><span>− <?= formatCurrency($comision) ?></span></div>
+                            <div class="sheet-line"><span>(−) Comisión (<?= $pctTxt ?>%)</span><span>− <?= formatCurrency($comision) ?></span></div>
                             <div class="sheet-line"><span>(−) Saldo a favor</span><span>− <?= formatCurrency($saldoFavor) ?></span></div>
                             <div class="sheet-line"><span>(+) Retención créditos</span><span>+ <?= formatCurrency($descuentoCreditos) ?></span></div>
                             <div class="sheet-grand"><strong>TOTAL FINAL</strong><span><?= formatCurrency($netoRendir) ?></span></div>

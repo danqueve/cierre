@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $saldo_concepto                = $_POST['saldo_concepto'];
         $descuento_creditos            = $_POST['descuento_creditos'] ?: 0;
         $descuento_creditos_concepto   = $_POST['descuento_creditos_concepto'];
+        $porcentaje_comision           = is_numeric($_POST['porcentaje_comision'] ?? '') ? max(0, min(100, (float)$_POST['porcentaje_comision'])) : 6;
 
         $stmtCheck = $pdo->prepare("SELECT id FROM cierres_semanales WHERE zona = ? AND fecha_inicio = ?");
         $stmtCheck->execute([$zona, $fecha]);
@@ -28,12 +29,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($existe) {
             $cierre_id = $existe['id'];
             if ($modo_carga === 'semanal' || ($saldo_favor > 0 || $descuento_creditos > 0)) {
-                $stmtUpd = $pdo->prepare("UPDATE cierres_semanales SET saldo_favor=?, saldo_concepto=?, descuento_creditos=?, descuento_creditos_concepto=? WHERE id=?");
-                $stmtUpd->execute([$saldo_favor, $saldo_concepto, $descuento_creditos, $descuento_creditos_concepto, $cierre_id]);
+                $stmtUpd = $pdo->prepare("UPDATE cierres_semanales SET saldo_favor=?, saldo_concepto=?, descuento_creditos=?, descuento_creditos_concepto=?, porcentaje_comision=? WHERE id=?");
+                $stmtUpd->execute([$saldo_favor, $saldo_concepto, $descuento_creditos, $descuento_creditos_concepto, $porcentaje_comision, $cierre_id]);
             }
         } else {
-            $stmtIns = $pdo->prepare("INSERT INTO cierres_semanales (zona, fecha_inicio, saldo_favor, saldo_concepto, descuento_creditos, descuento_creditos_concepto) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmtIns->execute([$zona, $fecha, $saldo_favor, $saldo_concepto, $descuento_creditos, $descuento_creditos_concepto]);
+            $stmtIns = $pdo->prepare("INSERT INTO cierres_semanales (zona, fecha_inicio, saldo_favor, saldo_concepto, descuento_creditos, descuento_creditos_concepto, porcentaje_comision) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmtIns->execute([$zona, $fecha, $saldo_favor, $saldo_concepto, $descuento_creditos, $descuento_creditos_concepto, $porcentaje_comision]);
             $cierre_id = $pdo->lastInsertId();
         }
 
@@ -132,6 +133,10 @@ $dias_short = ['LUNES' => 'Lu', 'MARTES' => 'Ma', 'MIERCOLES' => 'Mi', 'JUEVES' 
             set('t_efectivo', fmtMoneda(totalEf));
             set('t_transf',   fmtMoneda(totalTr));
             set('t_total',    fmtMoneda(totalEf + totalTr));
+            var pctEl = document.getElementById('porcentaje_comision');
+            var pct = pctEl && pctEl.value !== '' ? (parseFloat(pctEl.value) || 0) : 6;
+            set('r_pct',      String(pct).replace('.', ','));
+            set('t_comision', fmtMoneda((totalEf + totalTr) * pct / 100));
             set('t_gastos',   fmtMoneda(totalGasto));
             set('t_saldo',    fmtMoneda(saldo));
             set('t_desc',     fmtMoneda(desc));
@@ -232,6 +237,13 @@ $dias_short = ['LUNES' => 'Lu', 'MARTES' => 'Ma', 'MIERCOLES' => 'Mi', 'JUEVES' 
                                 <label for="fecha_inicio">Inicio de semana (lunes)</label>
                                 <input type="date" id="fecha_inicio" name="fecha_inicio" required class="input on-light"
                                        value="<?= date('Y-m-d', strtotime('monday this week')) ?>">
+                            </div>
+                            <div class="field" style="flex:0 1 150px;">
+                                <label for="porcentaje_comision" style="color:var(--color-accent-2-700); font-weight:700;">% de cobranza</label>
+                                <div class="imp-money sage"><i>%</i>
+                                    <input type="number" id="porcentaje_comision" name="porcentaje_comision" step="0.01" min="0" max="100"
+                                           inputmode="decimal" class="input" value="6" oninput="calcularTotales()">
+                                </div>
                             </div>
                             <span class="tag tag-accent-2 imp-tag-semana" id="semana-label"></span>
 
@@ -383,6 +395,7 @@ $dias_short = ['LUNES' => 'Lu', 'MARTES' => 'Ma', 'MIERCOLES' => 'Mi', 'JUEVES' 
                     <div class="imp-summary-rows">
                         <div><span>Efectivo</span><strong class="imp-num" id="t_efectivo">$ 0</strong></div>
                         <div><span>Transferencia</span><strong class="imp-num" id="t_transf">$ 0</strong></div>
+                        <div class="good"><span>Comisión (<span id="r_pct">6</span>%)</span><strong class="imp-num" id="t_comision">$ 0</strong></div>
                         <div class="warn"><span>Gastos</span><strong class="imp-num" id="t_gastos">$ 0</strong></div>
                         <hr>
                         <div class="good"><span>Saldo a favor (+)</span><strong class="imp-num" id="t_saldo">$ 0</strong></div>
