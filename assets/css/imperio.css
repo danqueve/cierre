@@ -548,3 +548,10 @@ tr.sel .lbl { color: var(--color-accent-700); }
 .imp-search .input { flex: 1; }
 .imp-search #search-count { font-size: 13px; color: var(--color-neutral-700); white-space: nowrap; }
 .dim { opacity: .2; }
+
+/* Búsqueda en el historial */
+.imp-search { display: flex; align-items: center; gap: 10px; }
+.imp-search i, .imp-search svg { flex: none; color: var(--color-neutral-600); }
+.imp-search .input { flex: 1; }
+.imp-search #search-count { font-size: 13px; color: var(--color-neutral-700); white-space: nowrap; }
+.dim { opacity: .2; }

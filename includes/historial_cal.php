@@ -241,6 +241,12 @@ $item_lbl  = $es_cob ? 'cierre' : 'liquidación';
                         <a href="<?= $url_hoy ?>" class="btn btn-secondary imp-btn-today" style="margin-left:auto;">Hoy</a>
                     </div>
 
+                    <div class="imp-search">
+                        <i data-lucide="search" style="width:16px; height:16px;"></i>
+                        <input type="search" id="searchInput" class="input on-bg" placeholder="Buscar por <?= $es_cob ? 'zona' : 'empleado' ?> o fecha (dd/mm)…" oninput="filterItems()">
+                        <span id="search-count"></span>
+                    </div>
+
                     <!-- Búsqueda en vivo -->
                     <div class="imp-search">
                         <i data-lucide="search" style="width:16px; height:16px;"></i>
@@ -409,6 +415,19 @@ $item_lbl  = $es_cob ? 'cierre' : 'liquidación';
             var q = document.getElementById('searchInput').value.toLowerCase().trim();
             var n = 0;
             document.querySelectorAll('[data-search]').forEach(function(el) {
+                var ok = !q || el.getAttribute('data-search').indexOf(q) !== -1;
+                el.classList.toggle('dim', !ok);
+                if (ok) n++;
+            });
+            document.getElementById('search-count').textContent = q ? n + (n === 1 ? ' resultado' : ' resultados') : '';
+        }
+
+        // --- Búsqueda en vivo (resalta los cierres que coinciden) ---
+        function filterItems() {
+            var q = document.getElementById('searchInput').value.toLowerCase().trim();
+            var els = document.querySelectorAll('[data-search]');
+            var n = 0;
+            els.forEach(function(el) {
                 var ok = !q || el.getAttribute('data-search').indexOf(q) !== -1;
                 el.classList.toggle('dim', !ok);
                 if (ok) n++;
